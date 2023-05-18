@@ -80,3 +80,165 @@ def user_schema(required: bool) -> dict:
         schema["required"] = ["email", "password", "name", "surname", "phone_number"]
 
     return schema
+
+
+def address_schema(required: bool) -> dict:
+    """Function to define a schema for an address.
+
+    It checks if all necessary fields are present and if they are in the correct format.
+
+    Args:
+        required (bool): True if the fields are required, False otherwise.
+
+    Returns:
+        dict: The schema for an address.
+    """
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": 0,
+        "properties": {
+            "address_name": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "address_line": {
+                "type": "string",
+                "minLength": 3,
+            },
+            "town": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "city": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "zip_code": {
+                "type": "string",
+                "minLength": 5,
+                "maxLength": 5,
+                "pattern": "^[0-9]*$"
+            },
+            "country": {
+                "type": "string",
+                "minLength": 2,
+            },
+            "user": {
+                "type": "string",
+                "minLength": 1
+            }
+        },
+        "required": ["address_name", "address_line", "town", "city", "zip_code", "country"]
+    }
+
+    if not required:
+        schema["required"] = []
+
+    return schema
+
+
+def manga_schema(required: bool) -> dict:
+    """Function to define a schema for a manga.
+
+    It checks if all necessary fields are present and if they are in the correct format.
+
+    Args:
+        required (bool): True if the fields are required, False otherwise.
+
+    Returns:
+        dict: The schema for a manga.
+    """
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": 0,
+        "properties": {
+            "title": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "author": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "description": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "price": {
+                "type": "number",
+                "minimum": 0
+            },
+            "stock": {
+                "type": "integer",
+                "minimum": 0
+            },
+            "image": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "genre": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "publisher": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "publication_date": {
+                "type": "date"
+            },
+            "supplier": {
+                "type": "string",
+                "minLength": 1,
+            }
+        },
+        "required": ["title", "author", "description", "price", "stock", "image", "category"]
+    }
+
+    if not required:
+        schema["required"] = []
+
+    return schema
+
+
+def supplier_schema(required: bool) -> dict:
+    """Function to define a schema for a supplier.
+
+    It checks if all necessary fields are present and if they are in the correct format.
+
+    Args:
+        required (bool): True if the fields are required, False otherwise.
+
+    Returns:
+        dict: The schema for a supplier.
+    """
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": 0,
+        "properties": {
+            "name": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "email": {
+                "type": "string",
+                "minLength": 5,
+                "pattern": "[^@\\s]+@[^@\\s]+\\.[^@\\s]+"
+            },
+            "contact_phone": {
+                "type": "string",
+                "minLength": 9,
+                "maxLength": 9,
+                "pattern": "^[0-9]*$"
+            }
+        },
+        "required": ["name", "email", "contact_phone"]
+    }
+
+    if not required:
+        schema["required"] = []
+
+    return schema

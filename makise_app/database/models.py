@@ -9,6 +9,7 @@ from datetime import datetime
 Model = db.Model
 Column = db.Column
 Integer = db.Integer
+Float = db.Float
 String = db.String
 Text = db.Text
 Boolean = db.Boolean
@@ -206,7 +207,7 @@ class Manga(Model):
     title = Column(String(100), nullable=False)
     author = Column(String(100), nullable=False)
     description = Column(Text, nullable=False)
-    price = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
     stock = Column(Integer, nullable=False)
     image = Column(String(100), nullable=False)
     genre = Column(String(50), nullable=False)
