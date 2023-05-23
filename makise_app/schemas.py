@@ -242,3 +242,88 @@ def supplier_schema(required: bool) -> dict:
         schema["required"] = []
 
     return schema
+
+
+def review_schema(required: bool) -> dict:
+    """Function to define a schema for a review.
+
+    It checks if all necessary fields are present and if they are in the correct format.
+
+    Args:
+        required (bool): True if the fields are required, False otherwise.
+
+    Returns:
+        dict: The schema for a review.
+    """
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": 0,
+        "properties": {
+            "comment": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "rating": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 4
+            },
+            "manga": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "user": {
+                "type": "string",
+                "minLength": 1,
+            }
+        },
+        "required": ["comment", "rating", "manga", "user"]
+    }
+
+    if not required:
+        schema["required"] = []
+
+    return schema
+
+
+def new_schema(required: bool) -> dict:
+    """Function to define a schema for a new.
+
+    It checks if all necessary fields are present and if they are in the correct format.
+
+    Args:
+        required (bool): True if the fields are required, False otherwise.
+
+    Returns:
+        dict: The schema for a new.
+    """
+    schema = {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "additionalProperties": 0,
+        "properties": {
+            "title": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "description": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "image": {
+                "type": "string",
+                "minLength": 1,
+            },
+            "category": {
+                "type": "string",
+                "minLength": 1,
+            }
+        },
+        "required": ["title", "description", "category"]
+    }
+
+    if not required:
+        schema["required"] = []
+
+    return schema

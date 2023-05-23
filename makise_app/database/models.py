@@ -423,6 +423,7 @@ class New(Model):
     title = Column(String(100), nullable=False)
     description = Column(Text, nullable=False)
     category = Column(Enum("manga", "anime", "japan", name="new_category"), nullable=False)
+    image = Column(String(100), nullable=True)
     date = Column(DateTime, nullable=False, default=datetime.now)
 
     def __init__(self, title, description, category):

@@ -1,10 +1,10 @@
-from flask import jsonify, request, Blueprint, flask, redirect, url_for, session, flash, Response
+from flask import jsonify, request, Blueprint, flash, Response, session, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from makise_app.extensions import db
 from makise_app.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New
 from makise_app.decorators import admin_required, json_payload, validate_schema
-from makise_app.schemas import user_schema, address_schema, manga_schema, supplier_schema
+from makise_app.schemas import user_schema, address_schema, manga_schema, supplier_schema, review_schema, new_schema
 import logging
 
 
@@ -828,3 +828,486 @@ def get_suppliers() -> (Response, int):
         logging.error(error)
 
         return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@json_payload
+@validate_schema(review_schema(required=True))
+@controller.route('/review', methods=['POST'])
+def create_review() -> (Response, int):
+    """Creates a review.
+
+    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
+    required):
+    {
+        "manga": "b3eda188a3c546f387cea70e940d0e1e",
+        "user": "387cea70e940d0e1eb3eda188a3c546f",
+        "rating": "4.6",
+        "comment": "Me encanta este manga."
+    }
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    parameters = request.json
+
+    try:
+        review = Review(**parameters)
+        db.session.add(review)
+        db.session.commit()
+        flash('Reseña creada correctamente.', category='success')
+
+        return jsonify({'review': review.get_dict()}), 200
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al crear la reseña.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@json_payload
+@validate_schema(review_schema(required=False))
+@controller.route('/review/<review_id>', methods=['PUT'])
+def update_review(review_id: str) -> (Response, int):
+    """Updates a review.
+
+    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
+    optional):
+    {
+        "rating": 4.6,
+        "comment": "Me encanta este manga."
+    }
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    parameters = request.json
+
+    try:
+        review_to_modify = db.session.query(Review).filter_by(id=review_id).first()
+        if review_to_modify:
+            review_to_modify.update(**parameters)
+            db.session.commit()
+            flash('Reseña actualizada correctamente.', category='success')
+
+            return jsonify({'review': review_to_modify.get_dict()}), 200
+        else:
+            flash('La reseña no existe.', category='error')
+
+            return jsonify({'error': 'Review does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al actualizar la reseña.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/review/<review_id>', methods=['DELETE'])
+def delete_review(review_id: str) -> (Response, int):
+    """Deletes a review.
+
+    A review is deleted from the database. The review id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        review_to_delete = db.session.query(Review).filter_by(id=review_id).first()
+        if review_to_delete:
+            db.session.delete(review_to_delete)
+            db.session.commit()
+            flash('Reseña eliminada correctamente.', category='success')
+
+            return jsonify({'review': review_to_delete.get_dict()}), 200
+        else:
+            flash('La reseña no existe.', category='error')
+
+            return jsonify({'error': 'Review does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al eliminar la reseña.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/review/<review_id>', methods=['GET'])
+def get_review(review_id: str) -> (Response, int):
+    """Gets a review.
+
+    A review is retrieved from the database. The review id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        review = db.session.query(Review).filter_by(id=review_id).first()
+        if review:
+            return jsonify({'review': review.get_dict()}), 200
+        else:
+            flash('La reseña no existe.', category='error')
+
+            return jsonify({'error': 'Review does not exist.'}), 400
+    except Exception as error:
+        flash('Error al obtener la reseña.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/review', methods=['GET'])
+def get_reviews() -> (Response, int):
+    """Gets all reviews.
+
+    All reviews are retrieved from the database.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        reviews = db.session.query(Review).all()
+
+        return jsonify({'reviews': [review.get_dict() for review in reviews]}), 200
+    except Exception as error:
+        flash('Error al obtener las reseñas.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@admin_required
+@json_payload
+@validate_schema(new_schema(required=True))
+@controller.route('/new', methods=['POST'])
+def create_new() -> (Response, int):
+    """Creates a new.
+
+    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
+    required except image):
+    {
+        "title": "Nuevo manga",
+        "description": "Este es un nuevo manga.",
+        "image": "death_note_black_edition.jpg",
+        "category": "b3eda188a3c546f387cea70e940d0e1e"
+    }
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    parameters = request.json
+
+    try:
+        new = New(**parameters)
+        db.session.add(new)
+        db.session.commit()
+        flash('Noticia creada correctamente.', category='success')
+
+        return jsonify({'new': new.get_dict()}), 200
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al crear la noticia.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@admin_required
+@json_payload
+@validate_schema(new_schema(required=False))
+@controller.route('/new/<new_id>', methods=['PUT'])
+def update_new(new_id: str) -> (Response, int):
+    """Updates a new.
+
+    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
+    optional):
+    {
+        "title": "Nuevo manga",
+        "description": "Este es un nuevo manga.",
+        "image": "death_note_black_edition.jpg",
+        "category": "b3eda188a3c546f387cea70e940d0e1e"
+    }
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    parameters = request.json
+
+    try:
+        new_to_modify = db.session.query(New).filter_by(id=new_id).first()
+        if new_to_modify:
+            new_to_modify.update(**parameters)
+            db.session.commit()
+            flash('Noticia actualizada correctamente.', category='success')
+
+            return jsonify({'new': new_to_modify.get_dict()}), 200
+        else:
+            flash('La noticia no existe.', category='error')
+
+            return jsonify({'error': 'New does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al actualizar la noticia.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@admin_required
+@controller.route('/new/<new_id>', methods=['DELETE'])
+def delete_new(new_id: str) -> (Response, int):
+    """Deletes a new.
+
+    A new is deleted from the database. The new id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        new_to_delete = db.session.query(New).filter_by(id=new_id).first()
+        if new_to_delete:
+            db.session.delete(new_to_delete)
+            db.session.commit()
+            flash('Noticia eliminada correctamente.', category='success')
+
+            return jsonify({'new': new_to_delete.get_dict()}), 200
+        else:
+            flash('La noticia no existe.', category='error')
+
+            return jsonify({'error': 'New does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al eliminar la noticia.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/new/<new_id>', methods=['GET'])
+def get_new(new_id: str) -> (Response, int):
+    """Gets a new.
+
+    A new is retrieved from the database. The new id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        new = db.session.query(New).filter_by(id=new_id).first()
+        if new:
+            return jsonify({'new': new.get_dict()}), 200
+        else:
+            flash('La noticia no existe.', category='error')
+
+            return jsonify({'error': 'New does not exist.'}), 400
+    except Exception as error:
+        flash('Error al obtener la noticia.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/new', methods=['GET'])
+def get_news() -> (Response, int):
+    """Gets all news.
+
+    All news are retrieved from the database.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        news = db.session.query(New).all()
+
+        return jsonify({'news': [new.get_dict() for new in news]}), 200
+    except Exception as error:
+        flash('Error al obtener las noticias.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/order/<order_id>', methods=['GET'])
+def get_order(order_id: str) -> (Response, int):
+    """Gets an order.
+
+    An order is retrieved from the database. The order id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        order = db.session.query(Order).filter_by(id=order_id).first()
+        if order:
+            return jsonify({'order': order.get_dict()}), 200
+        else:
+            flash('El pedido no existe.', category='error')
+
+            return jsonify({'error': 'Order does not exist.'}), 400
+    except Exception as error:
+        flash('Error al obtener el pedido.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@login_required
+@controller.route('/order', methods=['GET'])
+def get_orders() -> (Response, int):
+    """Gets all orders.
+
+    All orders are retrieved from the database.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        orders = db.session.query(Order).all()
+
+        return jsonify({'orders': [order.get_dict() for order in orders]}), 200
+    except Exception as error:
+        flash('Error al obtener los pedidos.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+# TODO: ALPHA VERSION SHOPPING CART. TESTING NEEDED. NOT WORKING. USES FUNCTIONS FROM THE OLD MAKISE PROJECT.
+@login_required
+@controller.route('/cart/add', methods=['POST'])
+def add_product_to_cart():
+    """Add product to cart. Adds the product with the given id to the cart."""
+    quantity = int(request.form['quantity'])
+    isbn_manga = request.form['isbn_manga']
+    # validate the received values
+    if quantity and isbn_manga and request.method == 'POST':
+        manga = Manga.query.filter_by(isbn_manga=isbn_manga).one()
+        manga_formatted = format_manga(manga)
+
+        item_array = {
+            manga_formatted['isbn_manga']:
+                {
+                    'isbn_manga': manga_formatted['isbn_manga'],
+                    'title': manga_formatted['title'],
+                    'author': manga_formatted['author'],
+                    'description': manga_formatted['description'],
+                    'image': manga_formatted['image'],
+                    'price': manga_formatted['price'],
+                    'stock': manga_formatted['stock'],
+                    'demography': manga_formatted['demography'],
+                    'publisher': manga_formatted['publisher'],
+                    'supplier': manga_formatted['supplier'],
+                    'quantity': quantity,
+                    'total_price': quantity * manga_formatted['price']
+                }
+        }
+
+        all_total_price = 0
+        all_total_quantity = 0
+
+        session.modified = True
+        if 'cart_item' in session:
+            if manga_formatted['isbn_manga'] in session['cart_item']:
+                for key, value in session['cart_item'].items():
+                    if manga_formatted['isbn_manga'] == key:
+                        old_quantity = session['cart_item'][key]['quantity']
+                        total_quantity = old_quantity + quantity
+                        session['cart_item'][key]['quantity'] = total_quantity
+                        session['cart_item'][key]['total_price'] = total_quantity * manga_formatted['price']
+            else:
+                session['cart_item'] = array_merge(session['cart_item'], item_array)
+
+            for key, value in session['cart_item'].items():
+                individual_quantity = int(session['cart_item'][key]['quantity'])
+                individual_price = float(session['cart_item'][key]['total_price'])
+                all_total_quantity = all_total_quantity + individual_quantity
+                all_total_price = all_total_price + individual_price
+        else:
+            session['cart_item'] = item_array
+            all_total_quantity = all_total_quantity + quantity
+            all_total_price = all_total_price + quantity * manga_formatted['price']
+
+        session['all_total_quantity'] = all_total_quantity
+        session['all_total_price'] = all_total_price
+
+        return redirect(url_for('products'))
+    else:
+        flash('Error al añadir el producto al carrito.', category='error')
+        return jsonify({"error": "Error adding the product to the cart"}), 401
+
+
+@login_required
+@controller.route('/cart/empty')
+def empty_cart():
+    """Empty cart. Empties the cart."""
+    try:
+        session.pop('cart_item')
+        session.pop('all_total_quantity')
+        session.pop('all_total_price')
+        flash('Carrito vaciado correctamente.', category='success')
+
+        return redirect(url_for('.products'))
+    except Exception as error:
+        print(error)
+        flash('Error al vaciar el carrito.', category='error')
+
+        return jsonify({"error": f"Error emptying the cart: {error}"}), 401
+
+
+@login_required
+@controller.route('/cart/delete/<isbn_manga>')
+def delete_product_from_cart(isbn_manga):
+    """Delete product. Deletes the product with the given id from the cart."""
+    try:
+        all_total_price = 0
+        all_total_quantity = 0
+        session.modified = True
+
+        for item in session['cart_item'].items():
+            if item[0] == isbn_manga:
+                session['cart_item'].pop(item[0], None)
+                if 'cart_item' in session:
+                    for key, value in session['cart_item'].items():
+                        individual_quantity = int(session['cart_item'][key]['quantity'])
+                        individual_price = float(session['cart_item'][key]['total_price'])
+                        all_total_quantity = all_total_quantity + individual_quantity
+                        all_total_price = all_total_price + individual_price
+                break
+
+        if all_total_quantity == 0:
+            session.clear()
+        else:
+            session['all_total_quantity'] = all_total_quantity
+            session['all_total_price'] = all_total_price
+
+        flash('Producto eliminado correctamente.', category='success')
+
+        return redirect(url_for('.products'))
+    except Exception as error:
+        print(error)
+        flash('Error al eliminar el producto.', category='error')
+
+        return jsonify({"error": f"Error deleting the product: {error}"}), 401
