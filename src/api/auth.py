@@ -1,10 +1,10 @@
 import logging
 from flask import Blueprint, render_template, request, flash, redirect, url_for, Response
 from flask_login import login_user, login_required, logout_user, current_user
-from makise_app.extensions import db
-from makise_app.database.models import User
-from makise_app.decorators import json_payload, validate_schema
-from makise_app.schemas import user_schema, login_schema
+from src.extensions import db
+from src.database.models import User
+from src.decorators import json_payload, validate_schema
+from src.schemas import user_schema, login_schema
 
 
 auth = Blueprint('auth', __name__)

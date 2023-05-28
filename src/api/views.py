@@ -1,6 +1,6 @@
 from flask import render_template, Blueprint
 from flask_login import login_required
-from makise_app.decorators import admin_required
+from src.decorators import admin_required
 
 
 view = Blueprint('view', __name__)

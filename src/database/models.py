@@ -1,8 +1,8 @@
 from flask_login import UserMixin
 from sqlalchemy.ext.hybrid import hybrid_property
 from werkzeug.security import generate_password_hash, check_password_hash
-from makise_app.extensions import db
-from makise_app.utils import get_uuid
+from src.extensions import db
+from src.utils import get_uuid
 from datetime import datetime
 
 

@@ -1,10 +1,10 @@
 from flask import jsonify, request, Blueprint, flash, Response, session, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import or_
-from makise_app.extensions import db
-from makise_app.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New
-from makise_app.decorators import admin_required, json_payload, validate_schema
-from makise_app.schemas import user_schema, address_schema, manga_schema, supplier_schema, review_schema, new_schema
+from src.extensions import db
+from src.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New
+from src.decorators import admin_required, json_payload, validate_schema
+from src.schemas import user_schema, address_schema, manga_schema, supplier_schema, review_schema, new_schema
 import logging
 
 

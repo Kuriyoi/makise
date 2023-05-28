@@ -1,6 +1,6 @@
 from flask import Flask, render_template
 from flask_cors import CORS
-from makise_app.extensions import db, login_manager
+from src.extensions import db, login_manager
 
 
 def initialize_app() -> Flask:
@@ -11,7 +11,7 @@ def initialize_app() -> Flask:
     The app instance is created with the Flask() constructor. The name of the app is passed as an argument. The name
     is used to find resources on the filesystem, and to store the app's instance path. The name is passed as the
     __name__ variable, which is a Python predefined variable, which is set to the name of the module in which it is
-    used. In this case, it is set to 'makise_app.app_define'.
+    used. In this case, it is set to 'src.app_define'.
     The template_folder and static_folder arguments are passed to the constructor to set the folders where the templates
     and static files are stored, respectively. Those are the html, css, js, etc. files that are used to render the
     frontend.
@@ -74,7 +74,7 @@ def register_extensions(app: Flask) -> None:
     Returns:
         None
     """
-    from makise_app.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New
+    from src.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New
 
     db.init_app(app)
     with app.app_context():
@@ -109,9 +109,9 @@ def register_blueprints(app: Flask) -> None:
     Returns:
         None
     """
-    from makise_app.api.controller import controller
-    from makise_app.api.auth import auth
-    from makise_app.api.views import view
+    from src.api.controller import controller
+    from src.api.auth import auth
+    from src.api.views import view
 
     app.register_blueprint(controller, url_prefix='/api')
     app.register_blueprint(auth, url_prefix='/')

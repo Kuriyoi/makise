@@ -1,4 +1,4 @@
-from makise_app.initialization import initialize_app
+from src.initialization import initialize_app
 
 
 app = initialize_app()
