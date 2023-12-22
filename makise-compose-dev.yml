@@ -1,0 +1,76 @@
+version: "3.6"
+
+name: makise-dev
+
+services:
+
+  app:
+      build: .
+      image: makise/flask:latest
+      container_name: makise-flask
+      command: flask run --host 0.0.0.0
+      restart: always
+      ports:
+        - "80:5000"
+      networks:
+        - makise-network
+      depends_on:
+        db:
+          condition: service_healthy
+        pgadmin:
+          condition: service_started
+      labels:
+        com.makise-flask.description: "Builds the Python app using local Dockerfile and runs
+          the initialization command. This container depends on the database to work with
+          no errors, so it won't be created unless the 'db' service is up and healthy (the
+          healthcheck block is well executed and answers positively)."
+
+  db:
+    image: postgres:15.3-bullseye
+    container_name: makise-db
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - makise-network
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    labels:
+      com.makise-db.description: "DB service, built using the official PostgreSQL 15.3 image.
+        It has a volume to persist the data and don't lose any information from the database."
+
+  pgadmin:
+    image: dpage/pgadmin4:6.21
+    container_name: makise-pgadmin
+    restart: always
+    ports:
+      - "5010:80"
+    networks:
+      - makise-network
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    labels:
+      com.makise-pgadmin.description: "Web administrator for PostgreSQL. Though it is not
+        necessary for the app or the database to work, it makes the administration of
+        the database a lot easier."
+
+volumes:
+  pgdata:
+    name: makise-pgdata
+
+networks:
+  makise-network:
+    name: makise-network

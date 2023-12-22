@@ -1,0 +1,48 @@
+{% extends "base_template.html" %}
+
+{% block title %}Inicia sesión{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-100">
+        <div class="col-md-6">
+            <div class="card p-4 border-0 shadow">
+                <h2 class="text-center mb-4">¡Bienvenido de nuevo!</h2>
+
+                <div id="error_login" class="container" role="alert"></div>
+
+                <form id="login_form" class="needs-validation" novalidate>
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input id="login_email" type="email" name="email" placeholder="pepito@grillo.aa"
+                                class="form-control" required minlength="1">
+                            <label for="login_email">Correo electrónico</label>
+                        </div>
+                        <div class="form-text">
+                            Introduce un correo electrónico con un formato válido (ej.: pepito@grillo.aa).
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-floating">
+                            <input id="login_password" type="password" name="password" placeholder="************"
+                                class="form-control" required minlength="8">
+                            <label for="login_password">Contraseña</label>
+                        </div>
+                    </div>
+
+                    <button id="login_button" type="submit" class="btn btn-secondary">Iniciar Sesión</button>
+                </form>
+
+                <p class="text-center mt-3">¿No tienes una cuenta?
+                    <a href="{{ url_for('view.register') }}">¡Regístrate!</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ JS_FOLDER }}/login.js"></script>
+{% endblock %}

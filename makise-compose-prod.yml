@@ -1,0 +1,74 @@
+version: "3.6"
+
+name: makise-prod
+
+services:
+
+  app:
+      build: .
+      image: makise/flask:latest
+      container_name: makise-flask
+      command: gunicorn app:app --bind=0.0.0.0:5000 --workers=4
+      restart: always
+      expose:
+        - 5000
+      networks:
+        - makise-network
+      depends_on:
+        db:
+          condition: service_healthy
+      labels:
+        com.makise-flask.containerdescription: "Builds the Python app using local Dockerfile
+          and runs the initialization command. This container depends on the database 
+          to work with no errors, so it won't be created unless the 'db' service is up
+          and healthy (the healthcheck block is well executed and answers positively)."
+
+  db:
+    image: postgres:15.3-bullseye
+    container_name: makise-db
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    expose:
+      - 5432
+    networks:
+      - makise-network
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    labels:
+      com.makise-db.container.description: "DB service, built using the official
+        PostgreSQL 15.3 image. It has a volume to persist the data and don't lose
+        any information from the database."
+
+  server:
+    image: nginx:1.25.0-bullseye
+    container_name: makise-server
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - makise-network
+    depends_on:
+      app:
+        condition: service_started
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    labels:
+      com.makise-server.container.description: "Nginx server, built using the official
+        Nginx 1.25.0 image. The config file used is on the project's root and is passed
+        to the container using a volume."
+
+volumes:
+  pgdata:
+    name: makise-pgdata
+
+networks:
+  makise-network:
+    name: makise-network

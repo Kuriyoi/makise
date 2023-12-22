@@ -1,0 +1,17 @@
+@media (min-width: 1025px) {
+    .h-custom {
+    height: 100vh !important;
+    }
+}
+
+.plus-minus-remove-symbol {
+    width: 10px;
+}
+
+.card-symbol {
+    width: 20px;
+}
+
+.cart_img {
+    width: 120px;
+}

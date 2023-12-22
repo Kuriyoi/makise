@@ -1,0 +1,176 @@
+{% extends "base_template.html" %}
+
+{% block title %}Regístrate{% endblock %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ CSS_FOLDER }}/sign_up.css">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4 py-5">
+    <div class="row mt-4 d-flex justify-content-center align-items-center h-100">
+        <div class="col-12">
+            <div class="card" style="border-radius: 15px;">
+                <div class="card-body p-0">
+                    <form id="sign_up_form" class="needs-validation" novalidate>
+                        <div class="row g-0">
+                            <div id="error_sign_up" class="container" role="alert"></div>
+
+                            <!-- User information -->
+                            <div class="col-lg-6">
+                                <div class="p-5">
+                                    <h3 id="sign_up_user_header" class="fw-normal mb-5">Datos personales</h3>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4 pb-2">
+                                            <div class="form-floating">
+                                                <input type="text" id="sign_up_name" name="name"
+                                                    class="form-control form-control-lg" required placeholder="Pepito">
+                                                <label for="sign_up_name">Nombre</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4 pb-2">
+                                            <div class="form-floating">
+                                                <input type="text" id="sign_up_surname" name="surname"
+                                                    class="form-control form-control-lg" required placeholder="Grillo">
+                                                <label for="sign_up_surname">Apellidos</label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="email" id="sign_up_email" name="email"
+                                                class="form-control form-control-lg" required
+                                                placeholder="pepito@grillo.aa">
+                                            <label for="sign_up_email">Correo electrónico</label>
+                                        </div>
+                                        <div class="form-text">
+                                            Introduce un correo electrónico con un formato válido
+                                            (ej.:pepito@grillo.aa).
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-4 pb-2">
+                                            <div class="form-floating">
+                                                <input type="password" id="sign_up_password_1" name="password_1"
+                                                    class="form-control form-control-lg" required
+                                                    placeholder="************">
+                                                <label for="sign_up_password">Contraseña</label>
+                                            </div>
+                                            <div class="form-text">
+                                                Introduce una contraseña de, como mínimo, 8 caracteres. Tiene que
+                                                incluir, al menos, una letra mayúscula, una minúscula, un número y un carácter
+                                                especial.
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6 mb-4 pb-2">
+                                            <div class="form-floating">
+                                                <input type="password" id="sign_up_password_2" name="password_2"
+                                                    class="form-control form-control-lg" required
+                                                    placeholder="************">
+                                                <label for="sign_up_password_confirm">Confirmar contraseña</label>
+                                            </div>
+                                            <div class="form-text">
+                                                Introduce la misma contraseña que en el campo anterior.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="tel" id="sign_up_phone_number" name="phone_number"
+                                                class="form-control form-control-lg" required placeholder="666555444">
+                                            <label for="sign_up_birthdate">Número de teléfono</label>
+                                            <div class="form-text">
+                                                Introduce un número de teléfono con un formato válido (ej.: 666555444).
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="text-center mt-3">Ya tienes una cuenta?
+                                        <a href="{{ url_for('view.sign_in') }}">¡Inicia sesión!</a>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Address data -->
+                            <div id="address_container" class="col-lg-6">
+                                <div class="p-5">
+                                    <h3 class="fw-normal mb-5">Dirección</h3>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="text" id="sign_up_address_name" name="address_name"
+                                                class="form-control form-control-lg" required
+                                                placeholder="Mi Dirección">
+                                            <label for="sign_up_address_name">Nombre de la dirección</label>
+                                            <div class="form-text">
+                                                Ej.: Mi dirección, Mi casa, etc.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="text" id="sign_up_address_line" name="address_line"
+                                                class="form-control form-control-lg" required
+                                                placeholder="Calle del Sol 1">
+                                            <label for="sign_up_address_line">Calle y número</label>
+                                            <div class="form-text">
+                                                Introduce la calle, el número y, si fuera necesario, portal, puerta,
+                                                etc.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="text" id="sign_up_town" name="town"
+                                                class="form-control form-control-lg" required placeholder="Camas">
+                                            <label for="sign_up_town">Localidad</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="text" id="sign_up_city" name="city"
+                                                class="form-control form-control-lg" required placeholder="Sevilla">
+                                            <label for="sign_up_city">Provincia</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-4 pb-2">
+                                        <div class="form-floating">
+                                            <input type="number" id="sign_up_zip_code" name="zip_code"
+                                                class="form-control form-control-lg" required placeholder="41110">
+                                            <label for="sign_up_zip_code">Código postal</label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-check d-flex justify-content-start mb-4 pb-3">
+                                        <input id="terms_and_conditions" class="form-check-input me-3" type="checkbox" name="terms_and_conditions"
+                                            value="terms" required>
+                                        <label class="form-check-label" for="terms_and_conditions">
+                                            Acepto los <a href="https://www.randompicker.com/terms/" target="_blank">Términos y Condiciones</a> del sitio.
+                                        </label>
+                                    </div>
+
+                                    <button id="sign_up_button" type="submit"
+                                        class="btn btn-secondary">Registrarse</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ JS_FOLDER }}/sign_up.js"></script>
+{% endblock %}

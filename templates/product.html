@@ -1,0 +1,118 @@
+{% extends "base_template.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ CSS_FOLDER }}/product.css">
+{% endblock %}
+
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container d-flex flex-md-row flex-column align-items-center justify-content-center mt-4">
+    <div class="col-md-6 align-self-center">
+        <img src="{{ COVERS_FOLDER }}/{{ product.image }}" alt="{{ product.title }}" class="img-fluid mb-4 w-50 rounded mx-auto d-block">
+    </div>
+    <div class="col-md-6 p-2 text-center">
+        <h2>{{ product.title }}</h2>
+        <ul>
+            {% if reviews %}
+                <li>
+                    <span class="fw-bold">Valoración media de nuestros usuarios:</span>
+                    {% if rating <= 1 %}
+                    <h2 class="fw-bold text-danger">{{ ("%.2f"|format(rating)).rstrip('0').rstrip('.') }}/5</h2>
+                    {% elif rating <= 3 %}
+                    <h2 class="fw-bold text-warning">{{ ("%.2f"|format(rating)).rstrip('0').rstrip('.') }}/5</h2>
+                    {% else %}
+                    <h2 class="fw-bold text-success">{{ ("%.2f"|format(rating)).rstrip('0').rstrip('.') }}/5</h2>
+                    {% endif %}
+                </li>
+            {% else %}
+                <li><span class="fw-bold">Sin valoraciones</span></li>
+            {% endif %}
+            <li>
+                <span class="fw-bold">Precio:</span>
+                <h3 class="fw-bold">{{ product.price }}&euro;</h3>
+            </li>
+            {% if product.stock > 0 %}
+                <li><span class="fw-bold text-success">En Stock:</span> {{ product.stock }} unidades</li>
+                <li class="mt-2">
+                    <form id="add_to_cart_form">
+                        <input type="hidden" name="quantity" value="1">
+                        <input type="hidden" name="product_id" value="{{ product.id_manga }}">
+                        {% if session['cart'][product.id_manga] %}
+                            <button id="add_to_cart" type="submit" class="btn btn-secondary" disabled>Añadido al carrito</button>
+                        {% else %}
+                            <button id="add_to_cart" type="submit" class="btn btn-secondary">Añadir al carrito</button>
+                        {% endif %}
+                    </form>
+                </li>
+            {% else %}
+                <li><span class="fw-bold text.danger">No disponible</span></li>
+            {% endif %}
+        </ul>
+    </div>
+    <div id="error_add_to_cart" class="container" role="alert"></div>
+</div>
+<hr>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-12 text-center">
+            <ul class="container nav nav-pills mb-3 d-flex justify-content-center" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-product-details-tab" data-bs-toggle="pill" data-bs-target="#pills-product-details" type="button" role="tab" aria-controls="pills-product-details" aria-selected="true">
+                        Detalles del producto
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-reviews-tab" data-bs-toggle="pill" data-bs-target="#pills-reviews" type="button" role="tab" aria-controls="pills-reviews" aria-selected="false">
+                        Opiniones de los clientes
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active text-center" id="pills-product-details" role="tabpanel" aria-labelledby="pills-product-details-tab" tabindex="0">
+        <ul>
+            <li><span class="fw-bold">Autor: </span>{{ product.author }}</li>
+            <li><span class="fw-bold">Género: </span>{{ product.genre }}</li>
+            <li><span class="fw-bold">Editorial: </span>{{ product.publisher }}</li>
+            <li><span class="fw-bold">Añadido el: </span>{{ product.added_date.strftime('%d/%m/%Y') }}</li>
+            <li><span class="fw-bold">Proveedor: </span>{{ product.supplier_mangas.name }}</li>
+        </ul>
+    </div>
+    <div class="tab-pane fade" id="pills-reviews" role="tabpanel" aria-labelledby="pills-reviews-tab" tabindex="0">
+        <div class="container mt-2">
+            <h3 class="mb-3">Reseñas</h3>
+            <ul class="list-group">
+            {% if reviews %}
+                {% for review in reviews %}
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between mb-1">
+                            <h5 class="fw-bold">{{ review.user_reviews.name }} {{ review.user_reviews.surname.0 }}.</h5>
+                            <span>{{ review.date.strftime('%d/%m/%Y') }} a las {{ review.date.strftime('%H:%M') }}</span>
+                        </div>
+                        <p>{{ review.comment }}</p>
+                        <div class="d-fllex mt-1">
+                        {% if review.rating <= 1 %}
+                            <h2 class="fw-bold text-danger">{{ ("%.2f"|format(review.rating)).rstrip('0').rstrip('.') }}/5</h2>
+                            {% elif review.rating <= 3 %}
+                            <h2 class="fw-bold text-warning">{{ ("%.2f"|format(review.rating)).rstrip('0').rstrip('.') }}/5</h2>
+                            {% else %}
+                            <h2 class="fw-bold text-success">{{ ("%.2f"|format(review.rating)).rstrip('0').rstrip('.') }}/5</h2>
+                        {% endif %}
+                        </div>
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li><span class="fw-bold">Todavía no hay valoraciones.</span></li>
+            {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ JS_FOLDER }}/product.js"></script>
+{% endblock %}

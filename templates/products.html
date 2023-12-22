@@ -1,0 +1,60 @@
+{% extends "base_template.html" %}
+
+{% block css %}
+<style>
+    .filtro-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #listaProductos {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    .filtro-container label {
+        margin-bottom: 0.5rem;
+    }
+</style>
+<link rel="stylesheet" href="{{ CSS_FOLDER }}/products.css">
+{% endblock %}
+
+{% block title %}Productos{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Products filters -->
+        <div id="products_filters" class="col-md-3">
+            <h3 class="mb-3">Filtros</h3>
+            <label for="order_by">Ordenar por:</label>
+            <select class="form-select mb-3" id="order_by">
+                <option value="title_asc">Título (A a Z)</option>
+                <option value="title_desc">Título (Z a A)</option>
+                <option value="price_asc">Precio (menor a mayor)</option>
+                <option value="price_desc">Precio (mayor a menor)</option>
+                <option value="stock_asc">Stock (menos unidades a más)</option>
+                <option value="stock_desc">Stock (más unidades a menos)</option>
+            </select>
+        </div>
+
+        <div class="col-md-9">
+            <h1 class="mb-4">Productos</h1>
+
+            <!-- Products list -->
+            <div class="row" id="products_list"></div>
+
+            <!-- Pagination controls -->
+            <div id="pagination_controls" class="mt-3 text-end"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+    covers_folder = "{{ COVERS_FOLDER }}";
+    self_link = "{{ SELF_LINK }}";
+</script>
+<script src="{{ JS_FOLDER }}/products.js"></script>
+{% endblock %}

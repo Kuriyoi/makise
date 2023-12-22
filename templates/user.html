@@ -1,0 +1,160 @@
+{% extends "base_template.html" %}
+
+{% block title %}Gestión de usuarios{% endblock %}
+
+{% block css %}
+<link href="../static/css/import/datatables.min.css" rel="stylesheet" />
+<link rel="stylesheet" href="../static/css/import/buttons.dataTables.min.css">
+<style>
+    @media screen and (max-width: 767px) {
+        li.paginate_button.previous {
+            display: inline;
+        }
+
+        li.paginate_button.next {
+            display: inline;
+        }
+
+        li.paginate_button {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div id="buttons">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-user-modal"
+            id="add-user">
+            Añadir</button>
+    </div>
+    <table id="users" class="display" width="100%">
+        <thead>
+            <tr>
+                <th data-priority="1">Nombre</th>
+                <th>Apellidos</th>
+                <th>Correo electrónico</th>
+                <th>Número de teléfono</th>
+                <th>Administrador</th>
+                <th data-priority="2">Acciones</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+<div class="modal fade" id="add-user-modal" tabindex="-1" aria-labelledby="add-user-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="add-user-label">Añadir usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-user-form">
+                    <div class="mb-3">
+                        <label for="user-name" class="col-form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="add-user-name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-age" class="col-form-label">Apellidos:</label>
+                        <textarea class="form-control" id="add-user-surname"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data" class="col-form-label">Correo electrónico:</label>
+                        <textarea class="form-control" id="add-user-email"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data1" class="col-form-label">Contraseña:</label>
+                        <textarea class="form-control" id="add-user-password"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data2" class="col-form-label">Repite la contraseña:</label>
+                        <textarea class="form-control" id="add-user-password2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data3" class="col-form-label">Número de teléfono:</label>
+                        <textarea class="form-control" id="add-user-phone_number"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data4" class="col-form-label">Administrador:</label>
+                        <textarea class="form-control" id="add-user-admin"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <input type="submit" class="btn btn-primary" id="submit-add" value="Añadir"
+                            data-bs-dismiss="modal">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="edit-user-modal" tabindex="-1" aria-labelledby="edit-user-label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="edit-user-label">Editar usuario</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="edit-user-form">
+                    <div class="mb-3">
+                        <label for="user-name" class="col-form-label">Nombre:</label>
+                        <input type="text" class="form-control" id="edit-user-name">
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-age" class="col-form-label">Apellidos:</label>
+                        <textarea class="form-control" id="edit-user-surname"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data" class="col-form-label">Correo electrónico:</label>
+                        <textarea class="form-control" id="edit-user-email"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data1" class="col-form-label">Contraseña:</label>
+                        <textarea class="form-control" id="edit-user-password"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data2" class="col-form-label">Repite la contraseña:</label>
+                        <textarea class="form-control" id="edit-user-password_2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data3" class="col-form-label">Número de teléfono:</label>
+                        <textarea class="form-control" id="edit-user-phone_number"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="user-data4" class="col-form-label">Administrador:</label>
+                        <textarea class="form-control" id="edit-user-admin"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        <input type="submit" class="btn btn-primary" id="submit-edit" value="Editar"
+                            data-bs-dismiss="modal">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="../static/js/import/jquery.min.js"></script>
+<script src="../static/js/import/datatables.min.js"></script>
+<script src="../static/js/import/diacritics-sort.js"></script>
+<script src="../static/js/import/dataTables.buttons.min.js"></script>
+<script>
+    jQuery.fn.DataTable.ext.type.search.string = function (data) {
+        return (!data ? '' : (typeof data === 'string' ? data
+            .replace(/[áÁ]/g, 'a')
+            .replace(/[éÉ]/g, 'e')
+            .replace(/[íÍ]/g, 'i')
+            .replace(/[óÓ]/g, 'o')
+            .replace(/[úÚ]/g, 'u')
+            .replace(/ï/g, 'i')
+            .replace(/ü/g, 'u') : data));
+    };
+</script>
+<script src="../static/js/user.js"></script>
+{% endblock %}

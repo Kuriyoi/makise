@@ -1,0 +1,208 @@
+{% extends "base_template.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ CSS_FOLDER }}/admin.css">
+<link rel="stylesheet" href="{{ CSS_IMPORT_FOLDER }}/datatables.min.css">
+<link rel="stylesheet" href="{{ CSS_IMPORT_FOLDER }}/buttons.dataTables.min.css">
+{% endblock %}
+
+{% block title %}Panel de administración{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <ul class="nav nav-pills mb-3 text-center" id="pills-tab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active btn" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab" aria-controls="pills-orders" aria-selected="true">Pedidos</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users" type="button" role="tab" aria-controls="pills-users" aria-selected="false">Usuarios</button>
+        </li>
+    </ul>
+    <div class="tab-content" id="pills-tabContent">
+        <div class="tab-pane fade show active" id="pills-orders" role="tabpanel" aria-labelledby="pills-orders-tab" tabindex="0">
+            <div class="container mt-5 mb-5">
+                <div id="error_delete_order" class="container" role="alert"></div>
+                <div id="buttons">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-order-modal" id="add-order" disabled>Añadir</button>
+                </div>
+                <table id="orders" class="display" width="100%">
+                    <thead>
+                        <tr>
+                            <th data-priority="1">Estado</th>
+                            <th>Fecha</th>
+                            <th>Importe total</th>
+                            <th data-priority="2">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="pills-users" role="tabpanel" aria-labelledby="pills-users-tab" tabindex="0">
+            <div class="container mt-5 mb-5">
+                <div id="error_delete_user" class="container" role="alert"></div>
+                <div id="buttons">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-user-modal" id="add-user">Añadir</button>
+                </div>
+                <table id="users" class="display" width="100%">
+                    <thead>
+                        <tr>
+                            <th data-priority="1">Correo electrónico</th>
+                            <th>Nombre</th>
+                            <th>Apellidos</th>
+                            <th>Teléfono</th>
+                            <th>Administrador</th>
+                            <th data-priority="2">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="add-user-modal" tabindex="-1" aria-labelledby="aadd-user-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="aadd-user-modal-label">Añadir usuario</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="add_user_form" class="needs-validation" novalidate>
+                                <div id="error_add_user" class="container" role="alert"></div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="email" id="add_user_email" name="add_user_email" class="form-control form-control-lg" required placeholder="pepito@grillo.aa" minlength="6">
+                                        <label for="add_user_email">Correo electrónico:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="add_user_name" name="add_user_name" class="form-control form-control-lg" required placeholder="Pepito" minlength="1">
+                                        <label for="add_user_name">Nombre:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="add_user_surname" name="add_user_surname" class="form-control form-control-lg" required placeholder="Grillo" minlength="1">
+                                        <label for="add_user_surname">Apellidos:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="password" id="add_user_password_1" name="add_user_password_1" class="form-control form-control-lg" required placeholder="********" minlength="8">
+                                        <label for="add_user_password_1">Contraseña:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="password" id="add_user_password_2" name="add_user_password_2" class="form-control form-control-lg" required placeholder="********" minlength="8">
+                                        <label for="add_user_password_2">Repite la contraseña:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="tel" id="add_user_phone_number" name="add_user_phone_number" class="form-control form-control-lg" required placeholder="666666666" minlength="9" maxlength="9">
+                                        <label for="add_user_phone_number">Número de teléfono:</label>
+                                    </div>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="add_user_admin" id="add_user_admin_1" value="Usuario" checked>
+                                    <label class="form-check-label" for="add_user_admin_1">
+                                        Usuario
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="add_user_admin" id="add_user_admin_2" value="Administrador">
+                                    <label class="form-check-label" for="add_user_admin_2">
+                                        Administrador
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                                    <input type="submit" class="btn btn-secondary" id="submit-add" value="Añadir">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="edit-user-modal" tabindex="-1" aria-labelledby="edit-user-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="edit-user-modal-label">Editar usuario</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="edit_user_form" class="needs-validation" novalidate>
+                                <div id="error_edit_user" class="container" role="alert"></div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="email" id="edit_user_email" name="edit_user_email" class="form-control form-control-lg" required placeholder="pepito@grillo.aa" minlength="6">
+                                        <label for="edit_user_email">Correo electrónico:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="edit_user_name" name="edit_user_name" class="form-control form-control-lg" required placeholder="Pepito" minlength="1">
+                                        <label for="edit_user_name">Nombre:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="edit_user_surname" name="edit_user_surname" class="form-control form-control-lg" required placeholder="Grillo" minlength="1">
+                                        <label for="edit_user_surname">Apellidos:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="tel" id="edit_user_phone_number" name="edit_user_phone_number" class="form-control form-control-lg" required placeholder="666666666" minlength="9" maxlength="9">
+                                        <label for="edit_user_phone_number">Número de teléfono:</label>
+                                    </div>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="edit_user_admin" id="edit_user_admin_1" value="Usuario" checked>
+                                    <label class="form-check-label" for="edit_user_admin_1">
+                                        Usuario
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="edit_user_admin" id="edit_user_admin_2" value="Administrador">
+                                    <label class="form-check-label" for="edit_user_admin_2">
+                                        Administrador
+                                    </label>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                                    <input type="submit" class="btn btn-secondary" id="submit-edit" value="Editar">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ JS_IMPORT_FOLDER }}/bootstrap.bundle.min.js"></script>
+<script src="{{ JS_IMPORT_FOLDER }}/jquery.min.js"></script>
+<script src="{{ JS_IMPORT_FOLDER }}/datatables.min.js"></script>
+<script src="{{ JS_IMPORT_FOLDER }}/diacritics-sort.js"></script>
+<script src="{{ JS_IMPORT_FOLDER }}/dataTables.buttons.min.js"></script>
+<script>
+    jQuery.fn.DataTable.ext.type.search.string = function (data) {
+        return (!data ? '' : (typeof data === 'string' ? data
+            .replace(/[áÁ]/g, 'a')
+            .replace(/[éÉ]/g, 'e')
+            .replace(/[íÍ]/g, 'i')
+            .replace(/[óÓ]/g, 'o')
+            .replace(/[úÚ]/g, 'u')
+            .replace(/ï/g, 'i')
+            .replace(/ü/g, 'u') : data));
+    };
+</script>
+<script src="{{ JS_FOLDER }}/user.js"></script>
+<script src="{{ JS_FOLDER }}/order.js"></script>
+{% endblock %}

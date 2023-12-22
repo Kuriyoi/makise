@@ -1,0 +1,37 @@
+nav, footer {
+    background-color: #c3c8f0
+}
+
+#copyright {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-secondary, .btn-outline-secondary:active, .btn-outline-secondary:visited {
+    border-color: #614682 !important;
+    color: #614682 !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-secondary:focus, .btn-outline-secondary:not(:disabled):not(.disabled):active,
+.btn-outline-secondary:not(:disabled):not(.disabled).active, .show > .btn-outline-secondary.dropdown-toggle {
+    color: white !important;
+    background-color: #614682 !important;
+}
+
+.btn-secondary, .btn-secondary:active, .btn-secondary:visited {
+    background-color: #614682 !important;
+    color: white !important;
+}
+
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary:not(:disabled):not(.disabled):active,
+.btn-secondary:not(:disabled):not(.disabled).active, .show > .btn-secondary.dropdown-toggle {
+    background-color: #523871 !important;
+}
+
+nav a:not(:has(img)):hover, nav a:not(:has(img)):focus, footer a:hover, footer a:focus {
+    color: #8064A2 !important;
+}
+
+#cart_image {
+    width: 20px;
+    height: 20px;
+}

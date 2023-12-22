@@ -1,0 +1,21 @@
+.profile-card {
+    max-width: 25rem;
+}
+
+.profile-header {
+    background-color: #614682;
+    color: #fff;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+    color: #fff;
+    background-color: #614682;
+}
+
+.accordion-button {
+    background-color: #8064A2;
+}
+
+.accordion-button.collapsed {
+    background-color: #c3c8f0;
+}

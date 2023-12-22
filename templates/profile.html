@@ -1,0 +1,339 @@
+{% extends "base_template.html" %}
+
+{% block css %}
+<link rel="stylesheet" href="{{ CSS_FOLDER }}/profile.css">
+{% endblock %}
+
+{% block title %}Perfil de {{ current_user.name }}{% endblock %}
+
+{% block content %}
+<!-- User information with a form to modify it -->
+<div class="container">
+	<div class="profile-card mt-5 mx-auto border border-1 boder-light rounded-3 shadow overflow-hidden">
+		<div class="profile-header text-center p-2">
+			<h2 class="mt-0 p-2">Tus datos de usuario</h2>
+		</div>
+		<div class="profile-body p-2 mt-2">
+			<form id="profile_form" class="needs-validation" novalidate>
+				<div id="error_profile" class="container" role="alert"></div>
+				<div class="mb-4 pb-2">
+					<div class="form-floating">
+						<input type="text" id="profile_name" name="name" class="form-control form-control-lg" required placeholder="Pepito" readonly minlength="1">
+						<label for="profile_name">Nombre</label>
+					</div>
+				</div>
+				<div class="mb-4 pb-2">
+					<div class="form-floating">
+						<input type="text" id="profile_surname" name="surname" class="form-control form-control-lg"
+							required placeholder="Grillo" readonly minlength="1">
+						<label for="profile_surname">Apellidos</label>
+					</div>
+				</div>
+				<div class="mb-4 pb-2">
+					<div class="form-floating">
+						<input type="email" id="profile_email" name="email" class="form-control form-control-lg"
+							required placeholder="pepito@grillo.aa" readonly minlength="1">
+						<label for="profile_email">Correo electrónico</label>
+					</div>
+					<div class="form-text">
+						Introduce un correo electrónico con un formato válido
+						(ej.:pepito@grillo.aa).
+					</div>
+				</div>
+				<div class="mb-4 pb-2">
+					<div class="form-floating">
+						<input type="tel" id="profile_phone_number" name="phone_number" class="form-control form-control-lg" required placeholder="666555444" readonly
+							minlength="9" maxlength="9">
+						<label for="profile_phone_number">Número de teléfono</label>
+						<div class="form-text">
+							Introduce un número de teléfono con un formato válido (ej.: 666555444).
+						</div>
+					</div>
+				</div>
+				<div class="d-grid gap-2">
+					<button id="profile_edit" type="button" class="btn btn-outline-secondary mt-2">Editar</button>
+					<button id="profile_save" type="submit" class="btn btn-success" disabled>Guardar cambios</button>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Nav with user addresses and orders. It has the option to change user's password -->
+	<div class="container mt-5 ms-3">
+		<div class="container ">
+			<div class="nav flex-column nav-pills me-3" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+				<button type="button" class="nav-link active" id="v-pills-address-tab" data-bs-toggle="pill"
+					data-bs-target="#v-pills-address" type="button" role="tab" aria-controls="v-pills-address"
+					aria-selected="true">
+					Direcciones
+				</button>
+				<button type="button" class="nav-link" id="v-pills-orders-tab" data-bs-toggle="pill" data-bs-target="#v-pills-orders"
+					type="button" role="tab" aria-controls="v-pills-orders" aria-selected="false">
+					Pedidos
+				</button>
+				<button class="nav-link" id="v-pills-password-tab" data-bs-toggle="pill" data-bs-target="#v-pills-password"
+					type="button" role="tab" aria-controls="v-pills-password" aria-selected="false">
+					Cambiar contraseña
+				</button>
+			</div>
+			<div class="tab-content" id="v-pills-tabContent">
+				<div class="tab-pane fade" id="v-pills-password" role="tabpanel" aria-labelledby="v-pills-password-tab" tabindex="0">
+					<form id="profile_edit_password_form" class="needs-validation" novalidate>
+						<div id="error_edit_password" class="container" role="alert"></div>
+						<div class="mb-4 pb-2">
+							<div class="form-floating">
+								<input type="password" id="profile_current_password" name="current_password" class="form-control form-control-lg"
+									required placeholder="********" minlength="8">
+								<label for="profile_name">Introduce tu contraseña actual</label>
+							</div>
+						</div>
+						<div class="mb-4 pb-2">
+							<div class="form-floating">
+								<input type="password" id="profile_new_password_1" name="profile_new_password_1" class="form-control form-control-lg"
+									required placeholder="********"  minlength="8">
+								<label for="profile_address_line">Introduce la nueva contraseña</label>
+								<div class="form-text">
+									Introduce una contraseña de, como mínimo, 8 caracteres. Tiene que
+									incluir, al menos, una letra mayúscula, una minúscula, un número y un carácter
+									especial.
+								</div>
+							</div>
+						</div>
+						<div class="mb-4 pb-2">
+							<div class="form-floating">
+								<input type="password" id="profile_new_password_2" name="profile_new_password_2" class="form-control form-control-lg"
+									required placeholder="********" minlength="8">
+								<label for="profile_town">Repite la nueva contraseña</label>
+							</div>
+						</div>
+						<div class="d-grid gap-2">
+							<button id="new_password_button" type="submit" class="btn btn-success">Actualizar contraseña</button>
+						</div>
+					</form>
+				</div>
+				<div class="tab-pane fade show active" id="v-pills-address" role="tabpanel" aria-labelledby="v-pills-address-tab" tabindex="0">
+					<div class="accordion container" id="addresses_accordion">
+						<div id="container_add_addresses" class="border border-1 border-light rounded-3 shadow overflow-hidden">
+							<div class="addresses-header text-center p-2">
+								<h2 class="mt-0 p-2">Tus Direcciones</h2>
+							</div>
+							<div class="container text-center"  data-bs-toggle="modal" data-bs-target="#profile_add_address_modal">
+								<button id="profile_add_address" class="btn btn-secondary">Añadir nueva dirección</button>
+							</div>
+
+							{% if current_user.addresses_user %}
+								{% for address in current_user.addresses_user %}
+								<div class="addresses-body p-2 mt-2">
+									<div class="accordion-item">
+										<h2 class="accordion-header" id="accordion_address_{{ loop.index }}">
+											<button class="accordion-button" type="button" data-bs-toggle="collapse"
+												data-bs-target="#accordion_address_{{ loop.index }}_collapse"
+												aria-expanded="true"
+												aria-controls="accordion_address_{{ loop.index }}_collapse">
+												{{ address.address_name }}
+											</button>
+										</h2>
+										{% if loop.index == 1 %}
+										<div id="accordion_address_{{ loop.index }}_collapse" class="accordion-collapse collapse show fw-semibold"
+											aria-labelledby="accordion_address_{{ loop.index }}" data-bs-parent="#addresses_accordion">
+										{% else %}
+										<div id="accordion_address_{{ loop.index }}_collapse" class="accordion-collapse collapse fm-semibold"
+											aria-labelledby="accordion_address_{{ loop.index }}" data-bs-parent="#addresses_accordion">
+										{% endif %}
+											<div class="accordion-body">
+												<form id="profile_edit_address_form_{{ address.id_address }}" class="needs-validation profile_addresses" novalidate>
+													<div id="error_address_{{ address.id_address }}" class="container" role="alert"></div>
+													<input type="hidden" name="profile_address_id" id="profile_address_id_{{ address.id_address }}" value="{{ address.id_address }}">
+													<div class="mb-4 pb-2">
+														<div class="form-floating">
+															<input type="text" id="profile_address_name_{{ address.id_address }}" name="address_name" class="form-control form-control-lg"
+																required placeholder="Mi Dirección" readonly value="{{ address.address_name }}" minlength="1">
+															<label for="profile_name">Nombre de la dirección</label>
+															<div class="form-text">
+																Ej.: Mi dirección, Mi casa, etc.
+															</div>
+														</div>
+													</div>
+													<div class="mb-4 pb-2">
+														<div class="form-floating">
+															<input type="text" id="profile_address_line_{{ address.id_address }}" name="address_line" class="form-control form-control-lg"
+																required placeholder="Calle del Sol 1" readonly value="{{ address.address_line }}" minlength="1">
+															<label for="profile_address_line">Calle y número</label>
+															<div class="form-text">
+																Introduce la calle, el número y, si fuera necesario, portal, puerta, etc.
+															</div>
+														</div>
+													</div>
+													<div class="mb-4 pb-2">
+														<div class="form-floating">
+															<input type="text" id="profile_town_{{ address.id_address }}" name="town" class="form-control form-control-lg"
+																required placeholder="Camas" readonly value="{{ address.town }}" minlength="1">
+															<label for="profile_town">Localidad</label>
+														</div>
+													</div>
+													<div class="mb-4 pb-2">
+														<div class="form-floating">
+															<input type="text" id="profile_city_{{ address.id_address }}" name="city"
+																class="form-control form-control-lg" required placeholder="Sevilla" readonly value="{{ address.city }}" minlength="1">
+															<label for="profile_city">Provincia</label>
+														</div>
+													</div>
+													<div class="mb-4 pb-2">
+														<div class="form-floating">
+															<input type="number" id="profile_zip_code_{{ address.id_address }}" name="zip_code"
+																class="form-control form-control-lg" required placeholder="41110" readonly value="{{ address.zip_code }}"
+																minlength="5" maxlength="5">
+															<label for="sign_up_zip_code">Código postal</label>
+														</div>
+													</div>
+													<div class="d-grid gap-2">
+														<button id="profile_address_{{ address.id_address }}_edit" type="button" class="btn btn-outline-secondary mt-2 edit_address">Editar</button>
+														<button id="profile_address_{{ address.id_address }}_save" type="submit" class="btn btn-success save_address" disabled>Guardar cambios</button>
+													</div>
+												</form>
+											</div>
+										</div>
+									</div>
+								</div>
+								{% endfor %}
+							{% endif %}
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="tab-pane fade" id="v-pills-orders" role="tabpanel" aria-labelledby="v-pills-orders-tab" tabindex="0">
+					<div class="accordion container" id="orders_accordion">
+						<div class="border border-1 border-light rounded-3 shadow overflow-hidden">
+							<div class="orders-header text-center p-2">
+								<h2 class="mt-0 p-2">Tus Pedidos</h2>
+							</div>
+
+							{% if current_user.payments_user %}
+								{% for payment in current_user.payments_user %}
+								<div class="orders-body p-2 mt-2">
+									<div class="accordion-item">
+										<h2 class="accordion-header" id="accordion_order_{{ loop.index }}">
+											<button class="accordion-button" type="button" data-bs-toggle="collapse"
+												data-bs-target="#accordion_order_{{ loop.index }}_collapse"
+												aria-expanded="true"
+												aria-controls="accordion_order_{{ loop.index }}_collapse">
+												Pedido #{{ payment.order_payments[0].id_order }} - Fecha: 
+												{{ payment.order_payments[0].date.strftime('%d/%m/%Y') }}
+											</button>
+										</h2>
+										{% if loop.index == 1 %}
+										<div id="accordion_order_{{ loop.index }}_collapse"
+											class="accordion-collapse collapse show text-end fw-semibold"
+											aria-labelledby="accordion_order_{{ loop.index }}">
+											{% else %}
+											<div id="accordion_order_{{ loop.index }}_collapse"
+												class="accordion-collapse collapse text-end fm-semibold"
+												aria-labelledby="accordion_order_{{ loop.index }}">
+												{% endif %}
+												<div class="accordion-body">
+													Estado del pedido: 
+													{% if payment.order_payments[0].order_status.value == "pending" %}
+														Pendiente de envío
+													{% elif payment.order_payments[0].order_status.value == "sent" %}
+														Enviado
+													{% elif payment.order_payments[0].order_status.value == "cancelled" %}
+														Canceldo
+													{% else %}
+														Error
+													{% endif %}
+													<br>
+													Dirección de envío: {{ payment.order_payments[0].address_orders.address_line }},
+													{{ payment.order_payments[0].address_orders.town }},
+													{{ payment.order_payments[0].address_orders.city }}
+													{{ payment.order_payments[0].address_orders.zip_code }}<br><br>
+													{% for product in payment.order_payments[0].orders_mangas_order %}
+														{{ product.quantity }} x {{ product.manga_orders.title }} - 
+														{{ product.manga_orders.price }} &euro;<br>
+													{% endfor %}
+													<hr>
+													Envío - 3.99 &euro;<br>
+													Total - {{ payment.order_payments[0].total_price }} &euro;
+												</div>
+											</div>
+										</div>
+									</div>
+								{% endfor %}
+							{% else %}
+								<div class="p-2 mt-2">
+									<div class="alert alert-info" role="alert">
+										<h4 class="alert-heading">¡No has realizado ningún pedido todavía!</h4>
+										<p class="mt-3">Cuando hagas tu primer pedido, aparecerá en esta pestaña.</p>
+									</div>
+								</div>
+							{% endif %}
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="profile_add_address_modal" tabindex="-1" aria-labelledby="profile_add_address_modal_label" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h1 class="modal-title fs-5" id="profile_add_address_modal_label">Nueva dirección</h1>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+			<div class="modal-body">
+				<form id="profile_add_address_form" class="needs-validation" novalidate>
+					<div id="error_add_address" class="container" role="alert"></div>
+					<div class="mb-4 pb-2">
+						<div class="form-floating">
+							<input type="text" id="profile_address_name" name="address_name" class="form-control form-control-lg" required placeholder="Mi Dirección" minlength="1">
+							<label for="profile_name">Nombre de la dirección</label>
+							<div class="form-text">
+								Ej.: Mi dirección, Mi casa, etc.
+							</div>
+						</div>
+					</div>
+					<div class="mb-4 pb-2">
+						<div class="form-floating">
+							<input type="text" id="profile_address_line" name="address_line" class="form-control form-control-lg" required placeholder="Calle del Sol 1" minlength="1">
+							<label for="profile_address_line">Calle y número</label>
+							<div class="form-text">
+								Introduce la calle, el número y, si fuera necesario, portal, puerta, etc.
+							</div>
+						</div>
+					</div>
+					<div class="mb-4 pb-2">
+						<div class="form-floating">
+							<input type="text" id="profile_town" name="town" class="form-control form-control-lg" required placeholder="Camas" minlength="1">
+							<label for="profile_town">Localidad</label>
+						</div>
+					</div>
+					<div class="mb-4 pb-2">
+						<div class="form-floating">
+							<input type="text" id="profile_city" name="city" class="form-control form-control-lg" required placeholder="Sevilla" minlength="1">
+							<label for="profile_city">Provincia</label>
+						</div>
+					</div>
+					<div class="mb-4 pb-2">
+						<div class="form-floating">
+							<input type="number" id="profile_zip_code" name="zip_code" class="form-control form-control-lg" required placeholder="41110" minlength="5" maxlength="5">
+							<label for="sign_up_zip_code">Código postal</label>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+					   <button type="submit" class="btn btn-secondary">Añadir dirección</button>
+				  </div>
+				</form>
+			</div>
+	  	</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script src="{{ JS_FOLDER }}/profile.js"></script>
+{% endblock %}

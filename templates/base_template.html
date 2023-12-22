@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="{{ IMG_FOLDER }}/makise_logo.png">
+    <link rel="stylesheet" href="{{ CSS_IMPORT_FOLDER }}/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ CSS_FOLDER }}/base.css">
+    {% block css %}{% endblock %}
+    <title>{% block title %}{% endblock %}</title>
+</head>
+
+<body class="pt-4 mt-4">
+    <!-- Navbar with business name and logo, search bar and user options -->
+    <nav class="navbar navbar-expand-lg py-3 fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('view.home') }}">
+                <img src="{{ IMG_FOLDER }}/makise_logo.png" alt="Logo" />
+                Makise
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarToggler"
+                aria-controls="navbarToggler" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarToggler">
+                <form class="d-flex ms-auto mt-lg-2 mt-4 mb-lg-0 mb-2" role="search">
+                    <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search">
+                    <button class="btn btn-outline-secondary" type="submit">Buscar</button>
+                </form>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-center text-lg-start">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="{{ url_for('view.home') }}">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view.products') }}">Productos</a>
+                    </li>
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.is_admin() %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ url_for('view.admin') }}">Panel de Administración</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="{{ url_for('view.home') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ current_user.name }}{{current_user.surname }}
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a id="profile" class="nav-link dropdown-item" href="{{ url_for('view.profile') }}">Perfil</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a id="logout" class="nav-link dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar sesión</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('view.sign_in') }}">Iniciar sesión</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('view.register') }}">Registrarse</a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        {% if current_user.is_authenticated %}
+                            <a class="nav-link" href="{{ url_for('view.shopping_cart') }}">
+                        {% else %}
+                            <a class="nav-link" href="{{ url_for('view.sign_in') }}">
+                        {% endif %}
+                            <img id="cart_image" src="{{ IMG_FOLDER }}/shopping_cart.png" alt="Carrito" /><span id="cart_quantity">
+                                {% if session['cart_quantity'] %}
+                                    {{ session['cart_quantity'] }}
+                                {% else %}
+                                    0
+                                {% endif %}
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Flash messages with alerts from Flask -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="pt-4 mt-4"></div>
+            <div class="container d-flex justify-content-end">
+                <div class="w-25">
+                {% for category, message in messages %}
+                    {% if category == 'error' %}
+                        {% if loop.first %}
+                        <div class="d-flex justify-content-between alert alert-danger alert-dismissable fade show mt-2" role="alert">
+                        {% else %}
+                        <div class="d-flex justify-content-between alert alert-danger alert-dismissable fade show" role="alert">
+                        {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% else %}
+                    {% if loop.first %}
+                        <div class="d-flex justify-content-between alert alert-success alert-dismissable fade show mt-2" role="alert">
+                        {% else %}
+                        <div class="d-flex justify-content-between alert alert-success alert-dismissable fade show" role="alert">
+                        {% endif %}
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if not request.path == '/' %}
+    <div class="pt-4"></div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+    <!-- Footer -->
+    <footer class="text-center">
+        <div class="container">
+            <!-- Section: Links -->
+            <section class="mt-5">
+                <div class="row text-center d-flex justify-content-center pt-5">
+                    <div class="col-md-2">
+                        <h6 class="text-uppercase font-weight-bold">
+                            <a href="{{ url_for('view.home') }}" class="text-white">Inicio</a>
+                        </h6>
+                    </div>
+                    <div class="col-md-2">
+                        <h6 class="text-uppercase font-weight-bold">
+                            <a href="{{ url_for('view.products') }}" class="text-white">Productos</a>
+                        </h6>
+                    </div>
+                    <div class="col-md-2">
+                        <h6 class="text-uppercase font-weight-bold">
+                            <a href="#!" class="text-white">Sobre nosotros</a>
+                        </h6>
+                    </div>
+                    <div class="col-md-2">
+                        <h6 class="text-uppercase font-weight-bold">
+                            {% if current_user.is_authenticated %}
+                                <a href="{{ url_for('view.profile') }}" class="text-white">Tu cuenta</a>
+                            {% else %}
+                                <a href="{{ url_for('view.sign_in') }}" class="text-white">Tu cuenta</a>
+                            {% endif %}
+                        </h6>
+                    </div>
+                </div>
+            </section>
+
+            <hr class="my-5" />
+
+            <section class="mb-5">
+                <div class="row d-flex justify-content-center">
+                    <div class="col-lg-8">
+                        <p>
+                            Esta es nuestra tienda de mangas, donde podrás encontrar una amplia
+                            selección de las mejores historias japonesas. Nos apasiona compartir
+                            estas emocionantes aventuras contigo, y estamos comprometidos con
+                            ofrecerte la mejor experiencia de compra.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Social -->
+            <section class="mb-5">
+                <a href="https://www.facebook.com/" class="me-4 w-25 link-underline link-underline-opacity-0">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/facebook.svg" alt="Facebook"><span
+                        class="text-dark ms-2">Facebook</span>
+                </a>
+                <a href="https://twitter.com/" class="me-4 w-25 link-underline link-underline-opacity-0 text-dark">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/twitter.svg" alt="Twitter"><span
+                        class="text-dark ms-2">Twitter</span>
+                </a>
+                <a href="https://www.youtube.com/" class="me-4 w-25 link-underline link-underline-opacity-0 text-dark">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/youtube.svg" alt="Youtube"><span
+                        class="text-dark ms-2">Youtube</span>
+                </a>
+                <a href="https://www.instagram.com/" class="me-4 link-underline link-underline-opacity-0 text-dark">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/instagram.svg" alt="Instagram"><span
+                        class="text-dark ms-2">Instagram</span>
+                </a>
+                <a href="https://www.linkedin.com/" class="me-4 link-underline link-underline-opacity-0 text-dark">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/linkedin.svg" alt="Linkedin"><span
+                        class="text-dark ms-2">Linkedin</span>
+                </a>
+                <a href="https://github.com/" class="me-4 link-underline link-underline-opacity-0 text-dark">
+                    <img src="{{ SOCIAL_MEDIA_FOLDER }}/github.svg" alt="Github"><span
+                        class="text-dark ms-2">Github</span>
+                </a>
+            </section>
+        </div>
+
+        <!-- Copyright -->
+        <div class="text-center p-3" id="copyright">
+            &copy; 2023 Copyright:
+            <a class="text-white" href="{{ SELF_LINK }}">Makise</a>
+            Todos los derechos reservados.
+        </div>
+    </footer>
+    {% block js %}{% endblock %}
+    <script src="{{ JS_FOLDER }}/base.js"></script>
+    <script src="{{ JS_IMPORT_FOLDER }}/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>
