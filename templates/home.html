@@ -82,15 +82,17 @@
                 {% for manga in mangas %}
                     {% if loop.first %}
                     <div class="carousel-item active">
-                        <a href="{{ url_for('view.home') }}">
-                            <img src="{{ COVERS_FOLDER }}/{{ manga.image }}" class="d-block mx-auto w-50 img-thumbnail"
+                        <a href="{{ SELF_LINK }}product/{{ manga.id_manga }}">
+                            <img src="{{ COVERS_FOLDER }}/{{ manga.image }}" class="d-block mx-auto w-50 img-thumbnail aspect_ratio"
                                 alt="{{ manga.title }}">
                         </a>
                     </div>
                     {% else %}
                     <div class="carousel-item">
-                        <img src="{{ COVERS_FOLDER }}/{{ manga.image }}" class="d-block mx-auto w-50 img-thumbnail"
-                            alt="{{ manga.title }}">
+                        <a href="{{ SELF_LINK }}product/{{ manga.id_manga }}">
+                            <img src="{{ COVERS_FOLDER }}/{{ manga.image }}" class="d-block mx-auto w-50 img-thumbnail aspect_ratio"
+                                alt="{{ manga.title }}">
+                        </a>
                     </div>
                     {% endif %}
                 {% endfor %}
@@ -114,8 +116,10 @@
         {% for review in reviews %}
         <div class="col-md-6 mb-4">
             <div class="card border-0 rounded shadow bg-light bg-gradient">
-                <img src="{{ COVERS_FOLDER }}/{{ review.manga_reviews.image }}" class="card-img-top w-50 h-50 mx-auto"
-                    alt="Portada de {{ review.manga_reviews.title }}">
+                <a href="{{ SELF_LINK }}product/{{ review.manga_reviews.id_manga }}">
+                    <img src="{{ COVERS_FOLDER }}/{{ review.manga_reviews.image }}" class="card-img-top w-50 h-50 mx-auto aspect_ratio"
+                        alt="Portada de {{ review.manga_reviews.title }}">
+                </a>
                 <div class="card-body">
                     <h5 class="card-title">{{ review.manga_reviews.title }}</h5>
                     <p class="card-text text-muted">{{ review.comment }}</p>

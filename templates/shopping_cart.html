@@ -8,6 +8,7 @@
 
 {% block content %}
 <section class="">
+    {% if session['cart'] %}
     <div class="container py-5">
         <div class="row d-flex justify-content-center align-items-center">
             <div class="col">
@@ -160,6 +161,14 @@
             </div>
         </div>
     </div>
+    {% else %}
+    <div class="container mt-4">
+        <div class="alert alert-warning mt-2" role="alert">
+            <h4 class="alert-heading">El carrito está vacío</h4>
+            <p class="mb-0">Vuelve cuando hayas añadido productos de nuestra <a href="{{ url_for('view.products') }}">tienda</a></p>
+        </div>
+    </div>
+    {% endif %}
 </section>
 {% endblock %}
 

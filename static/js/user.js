@@ -124,34 +124,36 @@ function add_edit_eventListener(user, edit_button) {
 
                 valid = validate_data(data, inputs, true);
 
-                edit_user(`/api/user/${user.id_user}`, data).then(response => {
-                    if (response.status === 200) {
-                        return response.json();
-                    } else {
-                        form_alert('Comprueba los datos introducidos.', 'error', error_edit_user);
-                        throw new Error(`HTTP error: ${response.status}`);
-                    }
-                }).then(user => {
-                    form_alert('Usuario editado correctamente.', 'success', error_edit_user);
-                    row_to_edit = document.querySelector(`#user-${user.id_user}`);
-                    if (user.admin) {
-                        user.admin = "Administrador";
-                    } else {
-                        user.admin = "Usuario";
-                    }
+                if (!valid.includes(false)) {
+                    edit_user(`/api/user/${user.id_user}`, data).then(response => {
+                        if (response.status === 200) {
+                            return response.json();
+                        } else {
+                            form_alert('Comprueba los datos introducidos.', 'error', error_edit_user);
+                            throw new Error(`HTTP error: ${response.status}`);
+                        }
+                    }).then(user => {
+                        form_alert('Usuario editado correctamente.', 'success', error_edit_user);
+                        row_to_edit = document.querySelector(`#user-${user.id_user}`);
+                        if (user.admin) {
+                            user.admin = "Administrador";
+                        } else {
+                            user.admin = "Usuario";
+                        }
 
-                    btn_edit = `<button type="button" class="btn btn-outline-warning"  data-bs-toggle="modal" data-bs-target="#add-user-modal"  id="edit-${user.id_user}" data-id="${user.id_user}">${edit_icon}</button>`;
-                    btn_delete = `<button type="button" class="btn btn-outline-danger" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button>`;
+                        btn_edit = `<button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edit-user-modal"  id="edit-${user.id_user}" data-id="${user.id_user}">${edit_icon}</button>`;
+                        btn_delete = `<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button>`;
 
-                    row = table.row(row_to_edit).data();
-                    edited_data = [user.email, user.name, user.surname, user.phone_number, user.admin, btn_edit.concat(btn_delete)];
+                        row = table.row(row_to_edit).data();
+                        edited_data = [user.email, user.name, user.surname, user.phone_number, user.admin, btn_edit.concat(btn_delete)];
 
-                    for (let i = 0; i < edited_data.length; i++) {
-                        row[i] = edited_data[i];
-                    }
+                        for (let i = 0; i < edited_data.length; i++) {
+                            row[i] = edited_data[i];
+                        }
 
-                    table.row(row_to_edit).data(row).draw();
-                });
+                        table.row(row_to_edit).data(row).draw();
+                    });
+                }
             });
         });
     });
@@ -162,21 +164,27 @@ function add_delete_eventListener(user, delete_button) {
 
     delete_button.addEventListener('click', () => {
         const error_delete_user = document.querySelector("#error_delete_user");
-        delete_user(`/api/user/${user.id_user}`).then(response => {
-            if (response.status === 200) {
-                return response.json();
-            } else if (response.status === 409) {
-                form_alert('No puedes eliminar un usuario con pedidos.', 'danger', error_delete_user);
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-            else {
-                form_alert('Error al eliminar el usuario.', 'danger', error_delete_user);
-                throw new Error(`HTTP error: ${response.status}`);
-            }
-        }).then(() => {
-            form_alert('Usuario eliminado correctamente.', 'success', error_delete_user);
-            row_to_delete = document.querySelector(`#user-${user.id_user}`);
-            table.row(row_to_delete).remove().draw(false);
+        const delete_user_form = document.querySelector("#delete_user_form");
+
+        delete_user_form.addEventListener('submit', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            delete_user(`/api/user/${user.id_user}`).then(response => {
+                if (response.status === 200) {
+                    return response.json();
+                } else if (response.status === 409) {
+                    form_alert('No puedes eliminar un usuario con pedidos.', 'danger', error_delete_user);
+                    throw new Error(`HTTP error: ${response.status}`);
+                } else {
+                    form_alert('Error al eliminar el usuario.', 'danger', error_delete_user);
+                    throw new Error(`HTTP error: ${response.status}`);
+                }
+            }).then(() => {
+                form_alert('Usuario eliminado correctamente.', 'success', error_delete_user);
+                row_to_delete = document.querySelector(`#user-${user.id_user}`);
+                table.row(row_to_delete).remove().draw(false);
+            });
         });
     });
 }
@@ -197,7 +205,7 @@ function add_to_tbody(users, tbody) {
         tbody += `<td>${user.phone_number}</td>`;
         tbody += `<td>${user.admin}</td>`;
         tbody += `<td><button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#edit-user-modal"  id="edit-${user.id_user}" data-id="${user.id_user}">${edit_icon}</button>`;
-        tbody += `<button type="button" class="btn btn-outline-danger" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button></td>`;
+        tbody += `<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button></td>`;
         tbody += `</tr>`;
     });
 
@@ -398,6 +406,11 @@ document.addEventListener('DOMContentLoaded', function () {
             add_user('/api/user', data).then(response => {
                 if (response.status === 201) {
                     return response.json();
+                } else if (response.status === 409) {
+                    document.querySelector('#add_user_email').classList.remove('is-valid');
+                    document.querySelector('#add_user_email').classList.add('is-invalid');
+                    form_alert('El correo eléctronico ya está en uso.', 'danger', error_add_user);
+                    throw new Error(`HTTP error: ${response.status}`);
                 } else {
                     form_alert('Comprueba los datos introducidos.', 'error', error_add_user);
                     throw new Error(`HTTP error: ${response.status}`);
@@ -405,8 +418,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(user => {
                 form_alert('Usuario añadido correctamente.', 'success', error_add_user);
                 add_user_form.reset();
-                btn_edit = `<button type="button" class="btn btn-outline-warning"  data-bs-toggle="modal" data-bs-target="#add-user-modal"  id="edit-${user.id_user}" data-id="${user.id_user}">${edit_icon}</button>`;
-                btn_delete = `<button type="button" class="btn btn-outline-danger" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button>`;
+                btn_edit = `<button type="button" class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#add-user-modal"  id="edit-${user.id_user}" data-id="${user.id_user}">${edit_icon}</button>`;
+                btn_delete = `<button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete-user-modal" id="delete-${user.id_user}" data-id="${user.id_user}">${trash_icon}</button>`;
 
                 if (user.admin) {
                     user.admin = "Administrador";

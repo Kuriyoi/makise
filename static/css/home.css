@@ -5,3 +5,7 @@
 h5 {
     color: #614682 !important;
 }
+
+.aspect_ratio {
+    aspect-ratio: 6 / 9;
+}

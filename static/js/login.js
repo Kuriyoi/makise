@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(response => {
                 if (response.status === 200 || response.status === 302) {
                     form_alert(
-                        'Inicio de sesión exitoso. Redireccionando... <div class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></div>',
+                        'Inicio de sesión exitoso. Redirigiendo... <div class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></div>',
                         'success', alert_placeholder
                         )
                     if (response.redirected) {

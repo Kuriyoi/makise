@@ -134,6 +134,20 @@ class User(Model, UserMixin):
         """
         return self.admin
 
+    def has_payments(self) -> bool:
+        """Check if a user has payments.
+
+        Returns:
+            bool: True if user has payments.
+        """
+        try:
+            if self.payments_user:
+                return True
+            else:
+                return False
+        except Exception:
+            return False
+
     def get_dict(self) -> dict:
         """Get user's data in a dictionary.
 
@@ -411,8 +425,9 @@ class Payment(Model):
     user_payments = relationship("User", back_populates="payments_user")
     order_payments = relationship("Order", back_populates="payment_orders")
 
-    def __init__(self, payment_date, payment_method, total_price, user):
+    def __init__(self, payment_date, payment_method, total_price, user, id_payment=get_uuid()):
         """Payment constructor."""
+        self.id_payment = id_payment
         self.payment_date = payment_date
         self.payment_method = payment_method
         self.total_price = total_price
@@ -456,11 +471,12 @@ class Order(Model):
     address_orders = relationship("Address", back_populates="orders_address")
     orders_mangas_order = relationship("OrderManga", back_populates="order_orders")
 
-    def __init__(self, date, order_status, total_price, user, address):
+    def __init__(self, date, order_status, total_price, payment, address, id_order=get_uuid()):
+        self.id_order = id_order
         self.date = date
         self.order_status = order_status
         self.total_price = total_price
-        self.user = user
+        self.payment = payment
         self.address = address
 
     def get_dict(self):
@@ -483,6 +499,7 @@ class Order(Model):
             "date": self.date,
             "status": status,
             "total_price": self.total_price,
+            "payment": self.payment,
             "address": self.address
         }
 

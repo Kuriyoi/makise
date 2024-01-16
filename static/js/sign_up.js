@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }).then(response => {
                 if (response.status === 200 || response.status === 302) {
                     form_alert(
-                        'Registro realizado con éxito. Redireccionando... <div class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></div>',
+                        'Registro realizado con éxito. Redirigiendo... <div class="spinner-border spinner-border-sm text-success" role="status" aria-hidden="true"></div>',
                         'success', alert_placeholder
                         )
                     if (response.redirected) {

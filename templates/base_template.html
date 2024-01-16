@@ -12,6 +12,14 @@
 </head>
 
 <body class="pt-4 mt-4">
+    <noscript>
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                Este sitio web requiere JavaScript para funcionar correctamente. Por favor, actívalo en tu navegador.
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    </noscript>
     <!-- Navbar with business name and logo, search bar and user options -->
     <nav class="navbar navbar-expand-lg py-3 fixed-top">
         <div class="container">
@@ -24,10 +32,10 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarToggler">
-                <form class="d-flex ms-auto mt-lg-2 mt-4 mb-lg-0 mb-2" role="search">
+                <!-- <form class="d-flex ms-auto mt-lg-2 mt-4 mb-lg-0 mb-2" role="search">
                     <input class="form-control me-2" type="search" placeholder="Buscar" aria-label="Search">
                     <button class="btn btn-outline-secondary" type="submit">Buscar</button>
-                </form>
+                </form> -->
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0 text-center text-lg-start">
                     <li class="nav-item">
                         <a class="nav-link" aria-current="page" href="{{ url_for('view.home') }}">Inicio</a>
@@ -43,7 +51,7 @@
                         {% endif %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="{{ url_for('view.home') }}" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                {{ current_user.name }}{{current_user.surname }}
+                                {{ current_user.name }} {{current_user.surname }}
                             </a>
                             <ul class="dropdown-menu">
                                 <li><a id="profile" class="nav-link dropdown-item" href="{{ url_for('view.profile') }}">Perfil</a></li>
@@ -80,7 +88,7 @@
     </nav>
 
     <!-- Flash messages with alerts from Flask -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
+    <!-- {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="pt-4 mt-4"></div>
             <div class="container d-flex justify-content-end">
@@ -109,7 +117,7 @@
                 </div>
             </div>
         {% endif %}
-    {% endwith %}
+    {% endwith %} -->
 
     {% if not request.path == '/' %}
     <div class="pt-4"></div>

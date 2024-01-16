@@ -1,10 +1,12 @@
+import os
 from datetime import datetime
-
 from flask import jsonify, request, Blueprint, flash, Response, session, redirect, url_for
 from flask_login import login_required, current_user
 from sqlalchemy import or_
+from werkzeug.utils import secure_filename
 from src.extensions import db
-from src.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New, Payment
+from src.utils import allowed_file, get_uuid
+from src.database.models import User, Address, Manga, Supplier, Review, Order, OrderManga, New, Payment, StatusEnum
 from src.decorators import admin_required, json_payload, validate_schema
 from src.schemas import user_schema, address_schema, manga_schema, supplier_schema, review_schema, new_schema
 import logging
@@ -44,7 +46,7 @@ def create_user() -> (Response, int):
     if user:
         flash('El correo ya está en uso.', category='error')
 
-        return jsonify({'error': 'Email already in use.'}), 400
+        return jsonify({'error': 'Email already in use.'}), 409
     else:
         if parameters['password_1'] != parameters['password_2']:
             flash('Las contraseñas no coinciden.', category='error')
@@ -236,7 +238,7 @@ def delete_user(user_id: str) -> (Response, int):
     try:
         user_to_delete = db.session.query(User).filter_by(id_user=user_id).first()
         if user_to_delete:
-            if user_to_delete.payments_user:
+            if user_to_delete.payments_user or current_user.id_user == user_to_delete.id_user:
                 return jsonify({'error': 'User has payments.'}), 409
 
             if user_to_delete.addresses_user:
@@ -364,12 +366,9 @@ def create_address() -> (Response, int):
     parameters = request.json
 
     try:
-        print('Hola')
         if not current_user.is_admin() or 'user' not in parameters:
-            print('Buenas tardes')
             address = Address(**parameters, user=current_user.id_user)
         else:
-            print('Buenas noches')
             address = Address(**parameters)
 
         user = db.session.query(User).filter_by(id_user=address.user).first()
@@ -532,40 +531,63 @@ def get_addresses() -> (Response, int):
 @controller.route('/manga', methods=['POST'])
 @login_required
 @admin_required
-@json_payload
-@validate_schema(manga_schema(required=True))
 def create_manga() -> (Response, int):
     """Creates a manga.
 
-    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
-    required):
-    {
-        "title": "Death Note Black Edition
-        "author": "Tsugumi Ohba / Takeshi Obata",
-        "description": "Light Yagami founds a notebook that can kill people whose name is written on it.",
-        "price": 15,
-        "stock": 20,
-        "image": "death_note_black_edition.jpg",
-        "genre": "Shōnen",
-        "publisher": "Norma Editorial",
-        "publication_date": "2012-01-01",
-        "supplier": "b3eda188a3c546f387cea70e940d0e1e"
-    }
+    Parameters are passed in the body of the request as multipart/form-data to allow for the image upload.
 
     Returns:
         Response: Flask response.
         int: HTTP status code.
     """
-    parameters = request.json
+    if 'title' not in request.form or 'author' not in request.form or 'description' not in request.form or \
+            'price' not in request.form or 'stock' not in request.form or 'image' not in request.files or \
+            'genre' not in request.form or 'publisher' not in request.form or 'supplier' not in request.form:
+        flash('Faltan campos obligatorios.', category='error')
+
+        return jsonify({'error': 'Missing required fields.'}), 400
+    elif not request.form['title'] or not request.form['author'] or not request.form['description'] or \
+            not request.form['price'] or not request.form['stock'] or not request.files['image'] or \
+            not request.form['genre'] or not request.form['publisher'] or not request.form['supplier']:
+        flash('Faltan campos obligatorios.', category='error')
+
+        return jsonify({'error': 'Missing required fields.'}), 400
+    elif not allowed_file(request.files['image'].filename):
+        flash('Formato de imagen no permitido.', category='error')
+
+        return jsonify({'error': 'Image format not allowed.'}), 409
+
+    cover = request.files['image']
+
+    filename = secure_filename(cover.filename)
+
+    parameters = {
+        'title': request.form['title'],
+        'author': request.form['author'],
+        'description': request.form['description'],
+        'price': request.form['price'],
+        'stock': request.form['stock'],
+        'image': filename,
+        'genre': request.form['genre'],
+        'publisher': request.form['publisher'],
+        'supplier': request.form['supplier'],
+        'added_date': datetime.now()
+    }
 
     try:
+        cover.save(f'static/img/covers/{filename}')
+
         manga = Manga(**parameters)
         db.session.add(manga)
         db.session.commit()
         flash('Manga creado correctamente.', category='success')
 
-        return jsonify(manga.get_dict()), 201
+        added_manga = manga.get_dict()
+        added_manga['supplier_name'] = manga.supplier_mangas.name
+
+        return jsonify(added_manga), 201
     except Exception as error:
+        os.remove(os.path.join('static/img/covers', filename))
         db.session.rollback()
         flash('Error al crear el manga.', category='error')
         logging.error(error)
@@ -576,45 +598,74 @@ def create_manga() -> (Response, int):
 @controller.route('/manga/<manga_id>', methods=['PUT'])
 @login_required
 @admin_required
-@json_payload
-@validate_schema(manga_schema(required=False))
 def update_manga(manga_id: str) -> (Response, int):
     """Updates a manga.
 
-    Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
-    optional):
-    {
-        "title": "Death Note Black Edition
-        "author": "Tsugumi Ohba / Takeshi Obata",
-        "description": "Light Yagami founds a notebook that can kill people whose name is written on it.",
-        "price": 15,
-        "stock": 20,
-        "image": "death_note_black_edition.jpg",
-        "genre": "Shonen",
-        "publisher": "Norma Editorial",
-        "publication_date": "2012-01-01",
-        "supplier": "b3eda188a3c546f387cea70e940d0e1e"
-    }
+    Parameters are passed in the body of the request as multipart/form-data to allow for the optional image upload.
 
     Returns:
         Response: Flask response.
         int: HTTP status code.
     """
-    parameters = request.json
+    if 'title' not in request.form or 'author' not in request.form or 'description' not in request.form or \
+            'stock' not in request.form or 'genre' not in request.form or 'publisher' not in request.form or \
+            'supplier' not in request.form:
+        flash('Faltan campos obligatorios.', category='error')
+
+        return jsonify({'error': 'Missing required fields.'}), 400
+    elif not request.form['title'] or not request.form['author'] or not request.form['description'] or \
+            not request.form['stock'] or not request.form['genre'] or not request.form['publisher'] or \
+            not request.form['supplier']:
+        flash('Faltan campos obligatorios.', category='error')
+
+        return jsonify({'error': 'Missing required fields.'}), 400
+
+    if 'image' in request.files:
+        if request.files['image']:
+            if not allowed_file(request.files['image'].filename):
+                flash('Formato de imagen no permitido.', category='error')
+
+                return jsonify({'error': 'Image format not allowed.'}), 409
+            else:
+                cover = request.files['image']
+        else:
+            cover = None
+    else:
+        cover = None
+
+    parameters = {
+        'title': request.form['title'],
+        'author': request.form['author'],
+        'description': request.form['description'],
+        'stock': request.form['stock'],
+        'genre': request.form['genre'],
+        'publisher': request.form['publisher'],
+        'supplier': request.form['supplier']
+    }
 
     try:
+        if cover:
+            filename = secure_filename(cover.filename)
+            parameters['image'] = filename
+            cover.save(f'static/img/covers/{filename}')
         manga_to_modify = db.session.query(Manga).filter_by(id_manga=manga_id).first()
         if manga_to_modify:
-            manga_to_modify.update(**parameters)
+            db.session.query(Manga).filter_by(id_manga=manga_id).update(parameters)
             db.session.commit()
             flash('Manga actualizado correctamente.', category='success')
 
-            return jsonify(manga_to_modify.get_dict()), 200
+            edited_manga = manga_to_modify.get_dict()
+            edited_manga['supplier_name'] = manga_to_modify.supplier_mangas.name
+
+            return jsonify(edited_manga), 200
         else:
             flash('El manga no existe.', category='error')
 
             return jsonify({'error': 'Manga does not exist.'}), 400
     except Exception as error:
+        if cover:
+            filename = secure_filename(cover.filename)
+            os.remove(os.path.join('static/img/covers', filename))
         db.session.rollback()
         flash('Error al actualizar el manga.', category='error')
         logging.error(error)
@@ -639,6 +690,7 @@ def delete_manga(manga_id: str) -> (Response, int):
         if manga_to_delete:
             db.session.delete(manga_to_delete)
             db.session.commit()
+            os.remove(os.path.join('static/img/covers', manga_to_delete.image))
             flash('Manga eliminado correctamente.', category='success')
 
             return jsonify(manga_to_delete.get_dict()), 200
@@ -679,10 +731,11 @@ def get_manga(manga_id: str) -> (Response, int):
         return jsonify({'error': str(error)}), 400
 
 
+@controller.route('/mangas_admin/<simple>', methods=['GET'])
 @controller.route('/mangas', methods=['GET'])
 @controller.route('/mangas/<sort_by>', methods=['GET'])
 @controller.route('/mangas/<sort_by>/<int:page>', methods=['GET'])
-def get_mangas(sort_by=None, page=1) -> (Response, int):
+def get_mangas(sort_by=None, page=1, simple='not_simple') -> (Response, int):
     """Gets all mangas.
 
     All mangas are retrieved from the database.
@@ -715,15 +768,33 @@ def get_mangas(sort_by=None, page=1) -> (Response, int):
         paginated_mangas = mangas.paginate(page=page, per_page=items_per_page, error_out=False)
         result_mangas = paginated_mangas.items
 
-        # Puedes agregar más información de paginación como total de páginas, etc.
-        pagination_data = {
-            'total_pages': paginated_mangas.pages,
-            'current_page': paginated_mangas.page,
-            'has_next': paginated_mangas.has_next,
-            'has_prev': paginated_mangas.has_prev
-        }
+        products = []
+        for manga in mangas:
+            manga_to_add = manga.get_dict()
+            if session.get('cart'):
+                if manga.id_manga in session['cart']:
+                    manga.in_cart = True
+                else:
+                    manga.in_cart = False
+            else:
+                manga.in_cart = False
+            manga_to_add['in_cart'] = manga.in_cart
+            manga_to_add['supplier_name'] = manga.supplier_mangas.name
+            products.append(manga_to_add)
 
-        return jsonify({'products': [manga.get_dict() for manga in result_mangas], 'pagination': pagination_data}), 200
+        if simple == 'simple' and current_user.is_admin():
+            return jsonify(products), 200
+        else:
+            pagination_data = {
+                'total_pages': paginated_mangas.pages,
+                'current_page': paginated_mangas.page,
+                'has_next': paginated_mangas.has_next,
+                'has_prev': paginated_mangas.has_prev
+            }
+
+        return jsonify(
+            {'products': [manga.get_dict() for manga in result_mangas], 'pagination': pagination_data}
+        ), 200
     except Exception as error:
         flash('Error al obtener los mangas.', category='error')
         logging.error(error)
@@ -747,7 +818,12 @@ def search_mangas(search_term: str) -> (Response, int):
                                                     Manga.genre.ilike(f'%{search_term}%'),
                                                     Manga.publisher.ilike(f'%{search_term}%'))).all()
 
-        return jsonify([manga.get_dict() for manga in mangas]), 200
+        if mangas:
+            return jsonify([manga.get_dict() for manga in mangas]), 200
+        else:
+            flash('No se han encontrado mangas.', category='error')
+
+            return jsonify({'error': 'No mangas found.'}), 404
     except Exception as error:
         flash('Error al obtener los mangas.', category='error')
         logging.error(error)
@@ -940,7 +1016,7 @@ def create_review() -> (Response, int):
     parameters = request.json
 
     try:
-        review = Review(**parameters)
+        review = Review(**parameters, user=current_user.id_user, date=datetime.now())
         db.session.add(review)
         db.session.commit()
         flash('Reseña creada correctamente.', category='success')
@@ -954,11 +1030,11 @@ def create_review() -> (Response, int):
         return jsonify({'error': str(error)}), 400
 
 
-@controller.route('/review/<review_id>', methods=['PUT'])
+@controller.route('/review/<manga_id>', methods=['PUT'])
 @login_required
 @json_payload
 @validate_schema(review_schema(required=False))
-def update_review(review_id: str) -> (Response, int):
+def update_review(manga_id: str) -> (Response, int):
     """Updates a review.
 
     Parameters are passed in the body of the request as JSON. The request must have the following format (all fields are
@@ -975,9 +1051,9 @@ def update_review(review_id: str) -> (Response, int):
     parameters = request.json
 
     try:
-        review_to_modify = db.session.query(Review).filter_by(id_review=review_id).first()
+        review_to_modify = db.session.query(Review).filter_by(user=current_user.id_user, manga=manga_id).first()
         if review_to_modify:
-            review_to_modify.update(**parameters)
+            db.session.query(Review).filter_by(user=current_user.id_user, manga=manga_id).update(parameters)
             db.session.commit()
             flash('Reseña actualizada correctamente.', category='success')
 
@@ -1236,6 +1312,7 @@ def get_news() -> (Response, int):
 
 @controller.route('/order/<order_id>', methods=['GET'])
 @login_required
+@admin_required
 def get_order(order_id: str) -> (Response, int):
     """Gets an order.
 
@@ -1262,6 +1339,7 @@ def get_order(order_id: str) -> (Response, int):
 
 @controller.route('/order', methods=['GET'])
 @login_required
+@admin_required
 def get_orders() -> (Response, int):
     """Gets all orders.
 
@@ -1277,6 +1355,77 @@ def get_orders() -> (Response, int):
         return jsonify([order.get_dict() for order in orders]), 200
     except Exception as error:
         flash('Error al obtener los pedidos.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@controller.route('/order', methods=['PUT'])
+@login_required
+def update_order() -> (Response, int):
+    """Updates an order.
+
+    An order is updated in the database. The order id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    order_id = request.json['order_id']
+    status = request.json['status']
+
+    try:
+        order = db.session.query(Order).filter_by(id_order=order_id).first()
+        if order:
+            if current_user.is_admin() or order.user_orders.id_user == current_user.id_user:
+                order.status = status
+                db.session.commit()
+                flash('Pedido actualizado correctamente.', category='success')
+
+                return jsonify(order.get_dict()), 200
+            else:
+                flash('No tienes permiso para actualizar este pedido.', category='error')
+
+                return jsonify({'error': 'You do not have permission to update this order.'}), 401
+        else:
+            flash('El pedido no existe.', category='error')
+
+            return jsonify({'error': 'Order does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al actualizar el pedido.', category='error')
+        logging.error(error)
+
+        return jsonify({'error': str(error)}), 400
+
+
+@controller.route('/order/cancel/<order_id>', methods=['PUT'])
+@login_required
+@admin_required
+def cancel_order(order_id: str) -> (Response, int):
+    """Cancels an order.
+
+    An order is cancelled in the database. The order id is passed as a parameter in the URL.
+
+    Returns:
+        Response: Flask response.
+        int: HTTP status code.
+    """
+    try:
+        order = db.session.query(Order).filter_by(id_order=order_id).first()
+        if order:
+            db.session.query(Order).filter_by(id_order=order_id).update({'order_status': StatusEnum.cancelled})
+            db.session.commit()
+            flash('Pedido cancelado correctamente.', category='success')
+
+            return jsonify(order.get_dict()), 200
+        else:
+            flash('El pedido no existe.', category='error')
+
+            return jsonify({'error': 'Order does not exist.'}), 400
+    except Exception as error:
+        db.session.rollback()
+        flash('Error al cancelar el pedido.', category='error')
         logging.error(error)
 
         return jsonify({'error': str(error)}), 400
@@ -1374,6 +1523,15 @@ def remove_from_cart() -> (Response, int):
 
             session.modified = True
 
+            if session['cart_quantity'] == 0:
+                session['cart'] = {}
+                session['cart_quantity'] = 0
+                session['total_price'] = 0
+
+                session.modified = True
+
+                return redirect(url_for('view.shopping_cart')), 302
+
             return jsonify({
                 'cart': session['cart'], 'cart_quantity': session['cart_quantity'],
                 'total_price': session['total_price']
@@ -1449,19 +1607,22 @@ def checkout() -> (Response, int):
 
         user = db.session.query(User).filter_by(id_user=current_user.id_user).first()
 
-        order = Order(
-            date=datetime.now(), order_status='pending', total_price=session['total_price'], user=user.id_user,
-            address=address
+        payment = Payment(
+            id_payment=get_uuid() ,payment_date=datetime.now(), payment_method='credit_card',
+            total_price=session['total_price'] + 2.99, user=user.id_user
         )
+
+        db.session.add(payment)
+
+        order = Order(
+            id_order=get_uuid(), date=datetime.now(), order_status='pending', total_price=session['total_price'] + 2.99,
+            address=address.id_address, payment=payment.id_payment
+        )
+
+        db.session.add(order)
 
         address.orders_address.append(order)
-
-        payment = Payment(
-            payment_date=datetime.now(), payment_method='credit_card', total_price=session['total_price'],
-            user=user.id_user
-        )
-
-        order.payment_orders.append(payment)
+        payment.order_payments.append(order)
         user.payments_user.append(payment)
 
         orders_mangas = []
@@ -1475,13 +1636,13 @@ def checkout() -> (Response, int):
 
             manga.stock -= quantity
 
-            order_manga = OrderManga(id_order=order.id_order, id_manga=manga, quantity=quantity)
+            order_manga = OrderManga(id_order=order.id_order, id_manga=manga.id_manga, quantity=quantity)
             orders_mangas.append(order_manga)
             manga.orders_mangas_manga.append(order_manga)
+            print('Cuarto')
             order.orders_mangas_order.append(order_manga)
+            print('Quinto')
 
-        db.session.add(order)
-        db.session.add(payment)
         db.session.add_all(orders_mangas)
         db.session.commit()
 

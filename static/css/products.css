@@ -5,3 +5,31 @@
 .card-title {
     color: #523871 !important;
 }
+
+.filtro-container {
+    display: flex;
+    flex-direction: column;
+}
+
+#listaProductos {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.filtro-container label {
+    margin-bottom: 0.5rem;
+}
+
+.img-link {
+    overflow: hidden;
+}
+
+.card-img-top {
+    aspect-ratio: 6 / 9;
+    object-fit: cover;
+    transition: transform 0.3s ease-in-out;
+}
+
+.card-img-top:hover {
+    transform: scale(1.1);
+}

@@ -51,7 +51,7 @@ def products():
         return render_template('products.html', error=error), 500
 
 
-@view.route('/product/<manga_id>')
+@view.route('/product/<manga_id>', methods=['GET'])
 def product(manga_id=None):
     try:
         manga = db.session.query(Manga).filter_by(id_manga=manga_id).first()
@@ -60,14 +60,32 @@ def product(manga_id=None):
             total_rating = 0
             for manga_review in manga.reviews_manga:
                 total_rating += manga_review.rating
-            print(total_rating)
             average_rating = total_rating / len(manga.reviews_manga)
-            print(average_rating)
         else:
             average_rating = 0
 
+        allow_review = False
+        user_reviewed = False
+
+        if not current_user.is_anonymous:
+            user = db.session.query(User).filter_by(id_user=current_user.id_user).first()
+
+            if user.has_payments():
+                for payment in current_user.payments_user:
+                    if not allow_review:
+                        order = db.session.query(Order).filter_by(id_order=payment.order_payments[0].id_order).first()
+                        for manga_in_order in order.orders_mangas_order:
+                            if manga_in_order.id_manga == manga_id:
+                                allow_review = True
+                                if manga.reviews_manga:
+                                    for review in manga.reviews_manga:
+                                        if review.user == current_user.id_user:
+                                            user_reviewed = review.get_dict()
+                                break
+
         return render_template(
-            'product.html', product=manga, reviews=manga.reviews_manga, rating=average_rating
+            'product.html', product=manga, reviews=manga.reviews_manga, rating=average_rating,
+            allow_review=allow_review, user_reviewed=user_reviewed
         ), 200
     except Exception as error:
         flash('Error al obtener el manga.', category='error')

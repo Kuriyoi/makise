@@ -6,3 +6,7 @@
 h2 {
     color: #614682;
 }
+
+#edit_review_form_submit {
+    display: none;
+}

@@ -15,16 +15,18 @@
             <button class="nav-link active btn" id="pills-orders-tab" data-bs-toggle="pill" data-bs-target="#pills-orders" type="button" role="tab" aria-controls="pills-orders" aria-selected="true">Pedidos</button>
         </li>
         <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-mangas-tab" data-bs-toggle="pill" data-bs-target="#pills-mangas" type="button" role="tab" aria-controls="pills-mangas" aria-selected="false">Mangas</button>
+        </li>
+        <li class="nav-item" role="presentation">
             <button class="nav-link" id="pills-users-tab" data-bs-toggle="pill" data-bs-target="#pills-users" type="button" role="tab" aria-controls="pills-users" aria-selected="false">Usuarios</button>
         </li>
     </ul>
+    <!-- Tab panes -->
     <div class="tab-content" id="pills-tabContent">
+        <!-- Orders pane -->
         <div class="tab-pane fade show active" id="pills-orders" role="tabpanel" aria-labelledby="pills-orders-tab" tabindex="0">
             <div class="container mt-5 mb-5">
                 <div id="error_delete_order" class="container" role="alert"></div>
-                <div id="buttons">
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-order-modal" id="add-order" disabled>Añadir</button>
-                </div>
                 <table id="orders" class="display" width="100%">
                     <thead>
                         <tr>
@@ -37,7 +39,205 @@
                     <tbody></tbody>
                 </table>
             </div>
+            <div class="modal fade" id="delete-order-modal" tabindex="-1" aria-labelledby="delete-order-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="delete-order-modal-label">¿Cancelar pedido?</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="delete_order_form">
+                                <div class="mb-4 pb-2">
+                                    <p>¿Estás seguro de que quieres cancelar este pedido?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Atrás</button>
+                                    <input type="submit" class="btn btn-secondary" data-bs-dismiss="modal" id="submit-delete_order" value="Cancelar pedido">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        <!-- Mangas pane -->
+        <div class="tab-pane fade" id="pills-mangas" role="tabpanel" aria-labelledby="pills-mangas-tab" tabindex="0">
+            <div class="container mt-5 mb-5">
+                <div id="error_delete_manga" class="container" role="alert"></div>
+                <div id="buttons">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#add-manga-modal" id="add-manga">Añadir</button>
+                </div>
+                <table id="mangas" class="display" width="100%">
+                    <thead>
+                        <tr>
+                            <th data-priority="1">Título</th>
+                            <th>Imagen</th>
+                            <th>Stock</th>
+                            <th>Precio</th>
+                            <th>Autor</th>
+                            <th>Género</th>
+                            <th>Editorial</th>
+                            <th>Proveedor</th>
+                            <th data-priority="2">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div class="modal fade" id="add-manga-modal" tabindex="-1" aria-labelledby="add-manga-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="add-manga-modal-label">Añadir manga</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="add_manga_form" class="needs-validation" novalidate>
+                                <div id="error_add_manga" class="container" role="alert"></div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="add_manga_title" name="add_manga_title" class="form-control form-control-lg" required placeholder="Ataque a los titanes" minlength="1">
+                                        <label for="add_manga_title">Título:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="file" id="add_manga_image" name="add_manga_image" class="form-control form-control-lg">
+                                        <label for="add_manga_image">Portada:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="number" id="add_manga_stock" name="add_manga_stock" class="form-control form-control-lg" required placeholder="11" minlength="1" step="1">
+                                        <label for="add_manga_stock">Stock:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="number" id="add_manga_price" name="add_manga_price" class="form-control form-control-lg" required placeholder="8.5" minlength="1" min="0.01" step="0.01">
+                                        <label for="add_manga_price">Precio:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="author" id="add_manga_author" name="add_manga_author" class="form-control form-control-lg" required placeholder="Nision Isin" minlength="1">
+                                        <label for="add_manga_author">Autor:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="add_manga_genre" name="add_manga_genre" class="form-control form-control-lg" required placeholder="Fantasía" minlength="1">
+                                        <label for="add_manga_genre">Género:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="add_manga_publisher" name="add_manga_publisher" class="form-control form-control-lg" required placeholder="Norma Editorial" minlength="1">
+                                        <label for="add_manga_publisher">Editorial:</label>
+                                    </div>
+                                </div>
+                                <select id="manga_supplier_select" class="form-select form-select-lg mb-3" aria-label=".form-select-lg supplier"></select>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <textarea name="add_manga_description" id="add_manga_description" class="form-control" cols="30" rows="10" placeholder="La historia del héroe..." required></textarea>
+                                        <label for="add_manga_author">Descripción:</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                                    <input type="submit" class="btn btn-secondary" id="submit-add_manga" value="Añadir">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="edit-manga-modal" tabindex="-1" aria-labelledby="edit-manga-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="edit-manga-modal-label">Editar manga</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="edit_manga_form" class="needs-validation" novalidate>
+                                <div id="error_edit_manga" class="container" role="alert"></div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="edit_manga_title" name="edit_manga_title" class="form-control form-control-lg" required placeholder="Ataque a los titanes" minlength="1">
+                                        <label for="edit_manga_title">Título:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="file" id="edit_manga_image" name="edit_manga_image" class="form-control form-control-lg">
+                                        <label for="edit_manga_image">Portada:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="number" id="edit_manga_stock" name="edit_manga_stock" class="form-control form-control-lg" required placeholder="11" minlength="1" step="1">
+                                        <label for="edit_manga_stock">Stock:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="author" id="edit_manga_author" name="edit_manga_author" class="form-control form-control-lg" required placeholder="Nision Isin" minlength="1">
+                                        <label for="edit_manga_author">Autor:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="edit_manga_genre" name="edit_manga_genre" class="form-control form-control-lg" required placeholder="Fantasía" minlength="1">
+                                        <label for="edit_manga_genre">Género:</label>
+                                    </div>
+                                </div>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <input type="text" id="edit_manga_publisher" name="edit_manga_publisher" class="form-control form-control-lg" required placeholder="Norma Editorial" minlength="1">
+                                        <label for="edit_manga_publisher">Editorial:</label>
+                                    </div>
+                                </div>
+                                <select id="manga_supplier_select_edit" class="form-select form-select-lg mb-3" aria-label=".form-select-lg supplier"></select>
+                                <div class="mb-4 pb-2">
+                                    <div class="form-floating">
+                                        <textarea name="edit_manga_description" id="edit_manga_description" class="form-control" cols="30" rows="10" placeholder="La historia del héroe..." required></textarea>
+                                        <label for="edit_manga_author">Descripción:</label>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cerrar</button>
+                                    <input type="submit" class="btn btn-secondary" id="submit-edit_manga" value="Editar">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="delete-manga-modal" tabindex="-1" aria-labelledby="delete-manga-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="delete-manga-modal-label">¿Eliminar manga?</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="delete_manga_form">
+                                <div class="mb-4 pb-2">
+                                    <p>¿Estás seguro de que quieres borrar este manga?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                    <input type="submit" class="btn btn-secondary" data-bs-dismiss="modal" id="submit-delete_manga" value="Eliminar">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Users pane -->
         <div class="tab-pane fade" id="pills-users" role="tabpanel" aria-labelledby="pills-users-tab" tabindex="0">
             <div class="container mt-5 mb-5">
                 <div id="error_delete_user" class="container" role="alert"></div>
@@ -62,7 +262,7 @@
                 <div class="modal-dialog">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h1 class="modal-title fs-5" id="aadd-user-modal-label">Añadir usuario</h1>
+                            <h1 class="modal-title fs-5" id="add-user-modal-label">Añadir usuario</h1>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
@@ -180,6 +380,27 @@
                     </div>
                 </div>
             </div>
+            <div class="modal fade" id="delete-user-modal" tabindex="-1" aria-labelledby="delete-user-modal-label" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h1 class="modal-title fs-5" id="delete-user-modal-label">¿Eliminar usuario?</h1>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form id="delete_user_form">
+                                <div class="mb-4 pb-2">
+                                    <p>¿Estás seguro de que quieres borrar este usuario?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                    <input type="submit" class="btn btn-secondary" data-bs-dismiss="modal" id="submit-delete_user" value="Eliminar">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -202,7 +423,9 @@
             .replace(/ï/g, 'i')
             .replace(/ü/g, 'u') : data));
     };
+    covers_folder = "{{ COVERS_FOLDER }}";
 </script>
-<script src="{{ JS_FOLDER }}/user.js"></script>
 <script src="{{ JS_FOLDER }}/order.js"></script>
+<script src="{{ JS_FOLDER }}/manga.js"></script>
+<script src="{{ JS_FOLDER }}/user.js"></script>
 {% endblock %}

@@ -4,7 +4,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from src.extensions import db
 from src.database.models import User, Address
 from src.decorators import json_payload, validate_schema
-from src.schemas import user_schema, login_schema
+from src.schemas import sign_up_schema, login_schema
 
 
 auth = Blueprint('auth', __name__)
@@ -61,15 +61,17 @@ def logout() -> Response:
         Response: Flask response.
     """
     logout_user()
-    session.pop('cart')
-    session.pop('cart_quantity')
+    if session.get('cart'):
+        session.pop('cart')
+    if session.get('cart_quantity'):
+        session.pop('cart_quantity')
 
     return redirect(url_for('view.home'))
 
 
 @auth.route('/sign_up', methods=['GET', 'POST'])
 @json_payload
-@validate_schema(user_schema(required=True))
+@validate_schema(sign_up_schema(required=True))
 def sign_up() -> {'str | Response', int}:
     """Signs up a new user.
 

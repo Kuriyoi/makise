@@ -17,20 +17,84 @@ document.addEventListener("DOMContentLoaded", function () {
             product_container.innerHTML = '';
 
             data.products.forEach(product => {
+                let in_cart = false;
+
+                if (product.in_cart) {
+                    in_cart = true;
+                }
+
+                if (in_cart) {
+                    button_cart = '<button type="submit" class="btn btn-secondary add_to_cart" disabled>Añadido al carrito</button>'
+                } else {
+                    button_cart = '<button type="submit" class="btn btn-secondary add_to_cart">Añadir al carrito</button>'
+                }
+
                 let product_html = `
                     <div class="col-md-4 mb-4">
                         <div class="card h-100">
-                            <div class="card-body text-center">
-                                <a href=${self_link}product/${product.id_manga}><img src="${covers_folder}/${product.image}" class="card-img-top" alt="${product.title}"></a>
-                                <a href=${self_link}product/${product.id_manga} class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"><h5 class="card-title">${product.title}</h5></a>
-                                <p class="card-text fw-bold">${product.price}&euro;</p>
-                                <p class="card-text">Fecha de salida: ${product.added_date}</p>
+                            <div class="card-body text-center d-flex flex-column justify-content-between">
+                                <a href="${self_link}product/${product.id_manga}" class="img-link"><img src="${covers_folder}/${product.image}" class="card-img-top" alt="${product.title}"></a>
+                                <div>
+                                    <a href=${self_link}product/${product.id_manga} class="link-offset-2 link-offset-3-hover link-underline link-underline-opacity-0 link-underline-opacity-75-hover"><h5 class="card-title">${product.title}</h5></a>
+                                    <p class="card-text fw-bold">${product.price}&euro;</p>
+                                    <form class="add_to_cart_form">
+                                        <input type="hidden" name="quantity" value="1">
+                                        <input type="hidden" name="product_id" value="${product.id_manga }">
+                                        ${button_cart}
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
                 product_container.innerHTML += product_html;
             });
+            const products_cart_forms = document.querySelectorAll('.add_to_cart_form');
+
+            products_cart_forms.forEach(function(product_form) {
+                const error_add_to_cart = document.querySelector('#error_add_to_cart');
+
+                product_form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    const product_id = product_form['product_id'].value;
+                    const quantity = product_form['quantity'].value;
+
+                    fetch('/api/cart/add', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            product_id,
+                            quantity
+                        }),
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    }).then(response => {
+                        if (response.status === 200) {
+                            return response.json();
+                        } else {
+                            form_alert('Error al añadir el producto al carrito.', 'danger', error_add_to_cart);
+                            throw new Error(`HTTP error: ${response.status}`);
+                        }
+                    }).then(data => {
+                        if (data.error) {
+                            form_alert('No hay suficiente stock de este producto', 'danger', error_add_to_cart);
+                            return;
+                        } else {
+                            const cart_quantity = document.querySelector('#cart_quantity');
+                            const add_to_cart = product_form.querySelector('.add_to_cart');
+
+                            add_to_cart.innerHTML = 'Añadido al carrito';
+                            add_to_cart.disabled = true;
+
+                            cart_quantity.innerHTML = ' ' + data.cart_quantity;
+                            form_alert('Producto añadido al carrito', 'success', error_add_to_cart);
+                        }
+                    });
+                });
+            });
+
             render_pagination_controls(data.pagination);
         });
     }
@@ -73,11 +137,11 @@ document.addEventListener("DOMContentLoaded", function () {
         document.querySelector('#pagination_controls').appendChild(button);
     }
 
-    // Evento de cambio en el select para ordenar los productos
+    // Event of change in the select to order the products
     document.querySelector('#order_by').addEventListener('change', function () {
         let sort_by = this.value;
 
-        // Volver a renderizar la lista de productos
+        // Renders the products list again
         render_products(sort_by, 1);
     });
 

@@ -38,8 +38,10 @@
                     <form id="add_to_cart_form">
                         <input type="hidden" name="quantity" value="1">
                         <input type="hidden" name="product_id" value="{{ product.id_manga }}">
-                        {% if session['cart'][product.id_manga] %}
-                            <button id="add_to_cart" type="submit" class="btn btn-secondary" disabled>Añadido al carrito</button>
+                        {% if session['cart'] %}
+                            {% if session['cart'][product.id_manga] %}
+                                <button id="add_to_cart" type="submit" class="btn btn-secondary" disabled>Añadido al carrito</button>
+                            {% endif %}
                         {% else %}
                             <button id="add_to_cart" type="submit" class="btn btn-secondary">Añadir al carrito</button>
                         {% endif %}
@@ -74,6 +76,7 @@
 <div class="container tab-content" id="pills-tabContent">
     <div class="tab-pane fade show active text-center" id="pills-product-details" role="tabpanel" aria-labelledby="pills-product-details-tab" tabindex="0">
         <ul>
+            <li><span class="fw-bold">Descripción: </span>{{ product.description }}</li>
             <li><span class="fw-bold">Autor: </span>{{ product.author }}</li>
             <li><span class="fw-bold">Género: </span>{{ product.genre }}</li>
             <li><span class="fw-bold">Editorial: </span>{{ product.publisher }}</li>
@@ -83,7 +86,41 @@
     </div>
     <div class="tab-pane fade" id="pills-reviews" role="tabpanel" aria-labelledby="pills-reviews-tab" tabindex="0">
         <div class="container mt-2">
-            <h3 class="mb-3">Reseñas</h3>
+            <h3 class="mb-3">Valoraciones</h3>
+            <div id="error_review" class="container" role="alert"></div>
+            {% if user_reviewed %}
+            <form id="review_form_edit" class="mb-2">
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comentario</label>
+                    <textarea class="form-control" id="comment" name="comment" rows="3" required disabled>{{ user_reviewed.comment }}</textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Valoración</label>
+                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" step="0.01" required disabled value="{{ user_reviewed.rating }}">
+                </div>
+                <input type="hidden" name="product_id" value="{{ product.id_manga }}">
+                <button type="button" id="edit_review_form" class="btn btn-secondary">Editar</button>
+                <button type="submit" id="edit_review_form_submit" class="btn btn-secondary">Enviar</button>
+            </form>
+            {% elif allow_review %}
+            <form id="add_review_form" class="mb-2">
+                <div class="mb-3">
+                    <label for="comment" class="form-label">Comentario</label>
+                    <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="rating" class="form-label">Valoración</label>
+                    <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" step="0.01" required>
+                </div>
+                <input type="hidden" name="product_id" value="{{ product.id_manga }}">
+                <button type="submit" class="btn btn-primary">Enviar</button>
+            </form>
+            <div id="error_review" class="container" role="alert"></div>
+            {% else %}
+            <div class="alert alert-warning" role="alert">
+                <span class="fw-bold">Para poder valorar este producto, tienes que tener la sesión iniciada y haberlo comprado.</span>
+            </div>
+            {% endif %}
             <ul class="list-group">
             {% if reviews %}
                 {% for review in reviews %}

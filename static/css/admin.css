@@ -3,6 +3,15 @@
     background-color: #614682;
 }
 
+td img {
+    width: 2rem;
+    transition: transform 0.3s ease-in-out;
+}
+
+td img:hover {
+    transform: scale(2.5);
+}
+
 @media screen and (max-width: 767px) {
     li.paginate_button.previous {
         display: inline;

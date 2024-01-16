@@ -11,8 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
                 'product_id': product_id
             })
         }).then(response => {
-            if (response.ok) {
+            if (response.status === 302) {
                 return response.json();
+            } else if (response.ok) {
+                location.reload();
             } else {
                 form_alert('Error al eliminar el producto del carrito', 'danger', error_cart);
                 throw new Error('Error al eliminar el producto del carrito');
@@ -57,11 +59,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     const product_quantity_inputs = document.querySelectorAll('.product_quantity');
-    console.log(product_quantity_inputs);
 
     product_quantity_inputs.forEach(input => {
         input.addEventListener('change', function (event) {
-            console.log('change');
             event.preventDefault();
             event.stopPropagation();
 

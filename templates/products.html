@@ -1,21 +1,6 @@
 {% extends "base_template.html" %}
 
 {% block css %}
-<style>
-    .filtro-container {
-        display: flex;
-        flex-direction: column;
-    }
-
-    #listaProductos {
-        display: flex;
-        flex-wrap: wrap;
-    }
-
-    .filtro-container label {
-        margin-bottom: 0.5rem;
-    }
-</style>
 <link rel="stylesheet" href="{{ CSS_FOLDER }}/products.css">
 {% endblock %}
 
@@ -24,6 +9,7 @@
 {% block content %}
 <div class="container mt-5">
     <div class="row">
+        <div id="error_add_to_cart" class="container" role="alert"></div>
         <!-- Products filters -->
         <div id="products_filters" class="col-md-3">
             <h3 class="mb-3">Filtros</h3>
